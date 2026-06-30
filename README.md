@@ -3,7 +3,7 @@
 ## Hybrid AI Framework for the Traveling Salesman Problem
 
 ```{=html}
-<p align="center">
+
 ```
 ![AI](https://img.shields.io/badge/AI-Artificial%20Intelligence-blue)
 ![Python](https://img.shields.io/badge/Python-3.x-yellow)
@@ -12,7 +12,7 @@
 ![ML](https://img.shields.io/badge/Machine%20Learning-Decision%20Tree-orange)
 
 ```{=html}
-</p>
+
 ```
 
 ------------------------------------------------------------------------
