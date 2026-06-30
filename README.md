@@ -2,18 +2,13 @@
 
 ## Hybrid AI Framework for the Traveling Salesman Problem
 
-```{=html}
 
-```
 ![AI](https://img.shields.io/badge/AI-Artificial%20Intelligence-blue)
 ![Python](https://img.shields.io/badge/Python-3.x-yellow)
 ![Algorithms](https://img.shields.io/badge/Solvers-ACO%20%7C%20GA%20%7C%20Held--Karp-green)
 ![Prolog](https://img.shields.io/badge/Logic%20Programming-SWI--Prolog-purple)
 ![ML](https://img.shields.io/badge/Machine%20Learning-Decision%20Tree-orange)
 
-```{=html}
-
-```
 
 ------------------------------------------------------------------------
 
