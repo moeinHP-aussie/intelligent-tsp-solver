@@ -8,9 +8,8 @@
 ![AI](https://img.shields.io/badge/AI-Artificial%20Intelligence-blue)
 ![Python](https://img.shields.io/badge/Python-3.x-yellow)
 ![Algorithms](https://img.shields.io/badge/Solvers-ACO%20%7C%20GA%20%7C%20Held--Karp-green)
+![Prolog](https://img.shields.io/badge/Logic%20Programming-SWI--Prolog-purple)
 ![ML](https://img.shields.io/badge/Machine%20Learning-Decision%20Tree-orange)
-![GUI](https://img.shields.io/badge/Interface-PyQt6-purple)
-![Status](https://img.shields.io/badge/Project-Academic-lightgrey)
 
 ```{=html}
 </p>
@@ -20,50 +19,52 @@
 
 ## 📌 Overview
 
-This project is an intelligent framework for solving the **Traveling
-Salesman Problem (TSP)** using a combination of classical Artificial
-Intelligence, optimization algorithms, and Machine Learning.
+This project implements an intelligent framework for solving the
+**Traveling Salesman Problem (TSP)** by combining classical Artificial
+Intelligence techniques, optimization algorithms, logic programming, and
+machine learning.
 
-The system integrates:
+The system provides multiple independent solving strategies and an
+intelligent advisor that recommends a suitable algorithm based on the
+characteristics of the input graph.
 
--   Exact optimization
--   Metaheuristic search
--   Intelligent algorithm selection
+The implemented approaches include:
 
-to analyze different solving strategies and choose appropriate
-approaches based on problem characteristics.
-
-The goal is not only to find a solution, but also to study the behavior,
-efficiency, and scalability of different AI methods.
+-   Exact dynamic programming with **Prolog / Held-Karp**
+-   Swarm intelligence using **Ant Colony Optimization (ACO)**
+-   Evolutionary computation using **Genetic Algorithm (GA + ERX)**
+-   Machine learning based algorithm recommendation using **Decision
+    Tree**
 
 ------------------------------------------------------------------------
 
-# ✨ Features
+# ✨ Key Features
 
--   ✅ Multiple TSP solving strategies
--   ✅ Exact and approximate optimization comparison
--   ✅ Graph-based geographic modeling
--   ✅ Interactive PyQt6 interface
--   ✅ Real-time visualization
--   ✅ Machine learning advisor
--   ✅ Modular software architecture
--   ✅ Performance benchmarking
+-   Multi-strategy TSP solving framework
+-   Exact vs heuristic algorithm comparison
+-   Geographic city modeling
+-   Automatic distance matrix generation
+-   PyQt6 graphical user interface
+-   Real-time route visualization
+-   ML-based solver recommendation
+-   Modular and extensible architecture
 
 ------------------------------------------------------------------------
 
 # 🏗️ Architecture
 
-                        User Interface
-                             |
-                           PyQt6
+                         PyQt6 GUI
                              |
                              v
 
-                  +---------------------+
-                  |  Data Processing    |
-                  | Haversine Distance  |
-                  | Distance Matrix     |
-                  +----------+----------+
+                  Geographic Data Layer
+                  (GeoNames API + Cache)
+
+                             |
+                             v
+
+                  Distance Matrix Generator
+                  (Haversine Formula)
 
                              |
             +----------------+----------------+
@@ -71,13 +72,12 @@ efficiency, and scalability of different AI methods.
             v                v                v
 
           ACO Solver       GA Solver     Prolog Solver
-       (Swarm AI)      (Evolutionary)    (Exact DP)
-
-            \                |                /
-             \               |               /
+       Swarm Intelligence Evolutionary   Exact DP
+                             |
+                             v
 
                   Decision Tree Advisor
-                  Intelligent Selection
+                  Algorithm Selection
 
 ------------------------------------------------------------------------
 
@@ -85,104 +85,134 @@ efficiency, and scalability of different AI methods.
 
 ## 🐜 Ant Colony Optimization (ACO)
 
-Inspired by natural ant colonies.
+ACO is a swarm intelligence algorithm inspired by the collective
+behavior of ants.
 
-Main mechanisms:
+The implementation uses:
 
--   Pheromone matrix
--   Probabilistic exploration
--   Evaporation
--   Reinforcement of good routes
+-   Artificial pheromone trails
+-   Probabilistic city selection
+-   Pheromone evaporation
+-   Best-route reinforcement
 
-ACO provides effective solutions for large search spaces.
+It is designed for solving larger TSP instances where exact algorithms
+become expensive.
 
 ------------------------------------------------------------------------
 
 ## 🧬 Genetic Algorithm (GA + ERX)
 
-An evolutionary approach designed for permutation problems.
+A population-based evolutionary optimization method.
 
-Includes:
+Main components:
 
--   Population generation
+-   Initial population generation
+-   Fitness evaluation
 -   Selection
 -   Mutation
 -   Edge Recombination Crossover (ERX)
 
-ERX preserves useful connections between cities and improves route
-quality.
+The ERX operator helps preserve high-quality connections between cities
+during crossover.
 
 ------------------------------------------------------------------------
 
-## 🔮 Exact Prolog Solver (Held-Karp)
+## 🔮 Prolog Exact Solver (Held-Karp)
 
-A logic programming based exact solver.
+A logic programming based exact solver implemented in **SWI-Prolog**.
 
-Characteristics:
+This module demonstrates the use of declarative programming for
+optimization problems.
 
--   Dynamic programming approach
+Features:
+
+-   Held-Karp dynamic programming approach
 -   Optimal solution guarantee
 -   Memoization optimization
+-   Bitmask based state representation
 
-Used as a baseline for comparing heuristic algorithms.
+The Prolog solver acts as a ground truth baseline for evaluating
+heuristic algorithms.
 
 ------------------------------------------------------------------------
 
-## 🌳 AI Algorithm Advisor
+## 🌳 Intelligent Algorithm Advisor
 
-A Decision Tree model predicts which solver is more appropriate.
+A Decision Tree classifier is used as a meta-level AI component.
 
-The model considers:
+The advisor analyzes graph features such as:
 
 -   Number of cities
--   Graph characteristics
 -   Distance distribution
--   Problem complexity
+-   Graph characteristics
 
-and recommends a suitable optimization method.
+and predicts the most suitable solver:
 
-------------------------------------------------------------------------
-
-# 🌍 Data Layer
-
-Cities are represented as nodes of a weighted graph.
-
-The system:
-
-1.  Receives geographic coordinates
-2.  Calculates distances using Haversine formula
-3.  Creates an N×N distance matrix
-4.  Sends the matrix to solvers
+-   Exact solver
+-   ACO
+-   Genetic Algorithm
 
 ------------------------------------------------------------------------
 
-# 📂 Repository Structure
+# 🌍 Data Processing
 
-    TSP-AI-Solver/
+The project uses geographic city information obtained through the
+GeoNames API.
 
-    ├── main.py
-    │   └── Application entry point
+Data processing pipeline:
 
-    ├── gui.py
-    │   └── PyQt6 graphical interface
+1.  Retrieve city coordinates
+2.  Convert locations into graph nodes
+3.  Calculate pairwise distances using the Haversine formula
+4.  Generate an N×N weighted distance matrix
+5.  Provide the matrix to all solvers
 
-    ├── core.py
-    │   └── Data processing and distance calculation
+------------------------------------------------------------------------
 
-    ├── solvers.py
-    │   └── ACO and Genetic Algorithm
+# 📂 Project Structure
 
-    ├── tsp_solver.pl
-    │   └── Held-Karp Prolog solver
+    intelligent-tsp-solver/
 
-    ├── prolog_bridge.py
-    │   └── Python-Prolog interface
+    ├── src/
+    │   ├── main.py
+    │   ├── gui.py
+    │   ├── core.py
+    │   ├── solvers.py
+    │   └── prolog_bridge.py
+    │
+    ├── prolog/
+    │   └── tsp_solver.pl
+    │
+    ├── scripts/
+    │   └── train_model.py
+    │
+    ├── models/
+    │   └── trained advisor model
+    │
+    ├── _REPORT_/
+    │   ├── pic1.png
+    │   ├── pic2.png
+    │   ├── pic3.png
+    │   └── pic4.png
+    │
+    ├── README.md
+    └── requirements.txt
 
-    ├── train_model.py
-    │   └── Decision Tree training
+------------------------------------------------------------------------
 
-    └── models/
-        └── Trained ML model files
+# 🖥️ Screenshots
+
+## Application Interface
+
+![Screenshot 1](./_REPORT_/pic1.png)
+
+![Screenshot 2](./_REPORT_/pic2.png)
+
+## Algorithm Execution and Results
+
+![Screenshot 3](./_REPORT_/pic3.png)
+
+![Screenshot 4](./_REPORT_/pic4.png)
 
 ------------------------------------------------------------------------
 
@@ -191,9 +221,9 @@ The system:
 Clone the repository:
 
 ``` bash
-git clone <repository-url>
+git clone https://github.com/moeinHP-aussie/intelligent-tsp-solver.git
 
-cd TSP-AI-Solver
+cd intelligent-tsp-solver
 ```
 
 Install dependencies:
@@ -206,73 +236,39 @@ pip install -r requirements.txt
 
 # ▶️ Running
 
-Start the application:
+Run the application:
 
 ``` bash
-python main.py
+python src/main.py
 ```
 
-Train the advisor model:
+Train the ML advisor:
 
 ``` bash
-python train_model.py
+python scripts/train_model.py
 ```
 
 ------------------------------------------------------------------------
 
 # 📊 Algorithm Comparison
 
-  Method              Category        Optimal   Suitable Size
-  ------------------- --------------- --------- ---------------
-  Held-Karp           Exact           Yes       Small
-  ACO                 Metaheuristic   No        Medium/Large
-  Genetic Algorithm   Evolutionary    No        Medium/Large
-  Decision Tree       ML Advisor      N/A       Selection
+  Method              Category             Optimal Solution   Best Use Case
+  ------------------- -------------------- ------------------ --------------------------
+  Held-Karp           Exact DP             Yes                Small graphs
+  ACO                 Swarm Intelligence   Approximate        Large search spaces
+  Genetic Algorithm   Evolutionary         Approximate        Large instances
+  Decision Tree       ML Advisor           Selection          Algorithm recommendation
 
 ------------------------------------------------------------------------
 
-# 🧪 Benchmarking
+# 🔬 Technologies
 
-The framework can compare:
-
--   Execution time
--   Route quality
--   Convergence speed
--   Scalability
-
-As the number of cities increases:
-
--   Exact approaches become computationally expensive
--   Metaheuristics become more practical
-
-------------------------------------------------------------------------
-
-# 🖥️ Demo
-
-Add your screenshots here:
-
-    docs/
-     ├── interface.png
-     ├── benchmark.png
-     └── architecture.png
-
-Example:
-
-![Application Screenshot](docs/interface.png)
-
-------------------------------------------------------------------------
-
-# 🔬 Academic Background
-
-This project demonstrates the integration of:
-
--   Search algorithms
--   Optimization techniques
--   Logic programming
--   Evolutionary computation
--   Machine learning
-
-for solving a classical NP-hard optimization problem.
+-   Python
+-   PyQt6
+-   NumPy
+-   Scikit-learn
+-   SWI-Prolog
+-   GeoNames API
 
 ------------------------------------------------------------------------
 
@@ -284,4 +280,15 @@ Artificial Intelligence Course Project
 
 ------------------------------------------------------------------------
 
-⭐ If you find this project useful, consider giving it a star.
+# ⭐ Academic Purpose
+
+This project demonstrates how different AI paradigms can cooperate to
+solve a classical NP-hard optimization problem.
+
+It combines:
+
+-   Search and optimization
+-   Logic programming
+-   Evolutionary algorithms
+-   Machine learning
+-   Software architecture design
