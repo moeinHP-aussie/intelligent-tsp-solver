@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گزارش پروژه حل مسئله فروشنده دوره‌گرد (TSP) با هوش مصنوعی</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+<style>
+/* ===================================================================
+   DESIGN TOKENS
+=================================================================== */
+:root{
+  --ink:#0e1726;
+  --ink-soft:#33415a;
+  --ink-muted:#65748b;
+  --paper:#eef1f7;
+  --surface:#ffffff;
+  --border:#e2e7f0;
+  --border-soft:#edf0f6;
+
+  --navy:#152849;
+  --navy-deep:#0c1830;
+  --navy-soft:#2c4b7c;
+  --navy-tint:#eef2f9;
+
+  --gold:#bd8b3f;
+  --gold-tint:#faf3e6;
+
+  /* algorithm identity system */
+  --c-prolog:#5b3aa8;
+  --c-prolog-tint:#f3effb;
+  --c-aco:#b8631a;
+  --c-aco-tint:#fbf0e4;
+  --c-ga:#157a5a;
+  --c-ga-tint:#e8f6f0;
+  --c-advisor:#1d5d8c;
+  --c-advisor-tint:#e9f3fa;
+
+  --radius-s:6px;
+  --radius-m:10px;
+  --radius-l:16px;
+  --shadow-card:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.12);
+  --shadow-pop:0 12px 36px -10px rgba(15,23,42,.22);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink-soft);
+  font-family:'Vazirmatn','Tahoma',sans-serif;
+  font-size:15.5px;
+  line-height:1.9;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+::selection{ background:var(--gold-tint); color:var(--navy-deep); }
+
+h1,h2,h3,h4,h5{
+  font-family:'Vazirmatn','Tahoma',sans-serif;
+  color:var(--navy);
+  margin:0 0 .6em 0;
+  line-height:1.5;
+  font-weight:700;
+}
+p{ margin:0 0 1em 0; text-align:justify; }
+b, strong{ color:var(--ink); font-weight:600; }
+a{ color:var(--navy-soft); }
+ul, ol{ margin:0 0 1em 0; padding-inline-start:1.4em; }
+li{ margin-bottom:.5em; }
+code, .mono{
+  font-family:'JetBrains Mono','Courier New',monospace;
+  direction:ltr;
+  unicode-bidi:isolate;
+}
+
+/* generic scroll offset so anchors land below nothing-fixed, just breathing room */
+h2[id], h3[id], h4[id], section[id]{ scroll-margin-top: 24px; }
+
+.container{ max-width:920px; margin:0 auto; padding:0 20px; }
+.container-wide{ max-width:1080px; margin:0 auto; padding:0 20px; }
+
+/* ===================================================================
+   READING PROGRESS BAR
+=================================================================== */
+#progress-bar{
+  position:fixed; top:0; right:0; left:0; height:3px; z-index:999;
+  background:linear-gradient(90deg, var(--gold), var(--navy-soft));
+  width:0%;
+  transition:width .08s linear;
+}
+
+/* ===================================================================
+   COVER
+=================================================================== */
+.cover{
+  background:
+    radial-gradient(900px 420px at 15% -10%, rgba(189,139,63,.20), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(44,75,124,.45), transparent 55%),
+    linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, #1d3a66 100%);
+  color:#eef2f9;
+  padding:78px 0 64px;
+  position:relative;
+  overflow:hidden;
+}
+.cover::after{
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(180deg, transparent, rgba(0,0,0,.6) 35%, transparent 90%);
+  pointer-events:none;
+}
+.cover-inner{ position:relative; z-index:1; }
+.cover-eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:12.5px; letter-spacing:.04em; color:#cfe0ff;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  padding:6px 14px; border-radius:999px;
+  margin-bottom:22px;
+}
+.cover-eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--gold); }
+.cover h1{
+  color:#fff;
+  font-size:clamp(26px, 4vw, 38px);
+  font-weight:800;
+  letter-spacing:-.01em;
+  max-width:780px;
+  margin-bottom:18px;
+}
+.cover-sub{
+  font-size:15.5px;
+  color:#cdd9ee;
+  max-width:660px;
+  line-height:2;
+  margin-bottom:34px;
+}
+.cover-badges{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:38px; }
+.cover-badge{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.16);
+  padding:9px 16px; border-radius:var(--radius-s);
+  font-size:13px; color:#e7edf9;
+  backdrop-filter:blur(4px);
+}
+.cover-badge b{ color:#fff; font-weight:700; }
+.cover-pillars{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;
+}
+.cover-pillar{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  border-top:3px solid var(--pillar-color, var(--gold));
+  border-radius:var(--radius-m);
+  padding:14px 14px 16px;
+}
+.cover-pillar .pillar-tag{ font-size:11px; color:#aebede; margin-bottom:6px; letter-spacing:.03em;}
+.cover-pillar .pillar-name{ font-size:13.5px; font-weight:700; color:#fff; }
+@media (max-width:760px){
+  .cover-pillars{ grid-template-columns:repeat(2, 1fr); }
+}
+
+/* ===================================================================
+   TABLE OF CONTENTS
+=================================================================== */
+.toc-section{ padding:46px 0 10px; }
+.toc-head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.toc-head h2{ font-size:21px; margin:0; }
+.toc-head .toc-note{ font-size:12.5px; color:var(--ink-muted); }
+.toc-grid{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:14px;
+  margin-bottom:8px;
+}
+@media (max-width:700px){ .toc-grid{ grid-template-columns:1fr; } }
+.toc-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-inline-start:4px solid var(--toc-color, var(--navy));
+  border-radius:var(--radius-m);
+  padding:16px 18px;
+  box-shadow:var(--shadow-card);
+}
+.toc-card .toc-num{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:24px; height:24px; border-radius:7px;
+  background:var(--toc-color, var(--navy)); color:#fff;
+  font-size:12px; font-weight:700; margin-inline-end:8px;
+  font-family:'JetBrains Mono',monospace;
+}
+.toc-card a.toc-title{
+  font-weight:700; color:var(--ink); text-decoration:none; font-size:14.5px;
+}
+.toc-card a.toc-title:hover{ color:var(--toc-color, var(--navy)); }
+.toc-sub{ margin:10px 0 0 0; padding:0; list-style:none; }
+.toc-sub li{ margin:0 0 5px 0; }
+.toc-sub a{
+  font-size:12.5px; color:var(--ink-muted); text-decoration:none;
+  display:block; padding-inline-start:32px; position:relative;
+}
+.toc-sub a::before{
+  content:"–"; position:absolute; inset-inline-start:18px; color:var(--border);
+}
+.toc-sub a:hover{ color:var(--toc-color, var(--navy)); }
+
+/* ===================================================================
+   SECTIONS / CARDS (shared report components)
+=================================================================== */
+main{ padding:30px 0 80px; }
+.chapter{ margin-bottom:46px; scroll-margin-top:20px; }
+.chapter-head{
+  display:flex; align-items:center; gap:14px; margin-bottom:18px; padding:0 4px;
+}
+.chapter-head .chapter-index{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px; font-weight:700; color:#fff;
+  background:var(--chapter-color, var(--navy));
+  width:38px; height:38px; min-width:38px;
+  border-radius:10px; display:flex; align-items:center; justify-content:center;
+}
+.chapter-head h2{
+  font-size:22px; margin:0; color:var(--ink);
+  border-bottom:none;
+}
+.chapter-head .chapter-kicker{
+  display:block; font-size:11.5px; color:var(--chapter-color, var(--navy));
+  font-weight:700; letter-spacing:.04em; margin-bottom:3px;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-inline-start:5px solid var(--card-accent, var(--navy));
+  border-radius:var(--radius-m);
+  padding:26px 28px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow-card);
+}
+.card > h3:first-child, .card > h4:first-child{ margin-top:0; }
+.card h3{
+  font-size:17.5px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border-soft);
+  margin-bottom:16px;
+}
+.card h4{
+  font-size:14.5px;
+  margin-top:22px;
+  margin-bottom:10px;
+  color:var(--card-accent, var(--navy));
+}
+.card h4:first-of-type{ margin-top:4px; }
+.card p, .card li{ font-size:14px; color:var(--ink-soft); }
+.lead{
+  font-size:14.5px !important;
+  color:var(--ink-soft);
+}
+
+.subnote{ font-size:12px; color:var(--ink-muted); }
+
+/* callouts */
+.callout{
+  background:var(--navy-tint);
+  border-inline-start:4px solid var(--navy-soft);
+  border-radius:var(--radius-s);
+  padding:14px 18px;
+  font-size:13.5px;
+  color:var(--ink);
+  margin:14px 0;
+}
+.callout b:first-child{ color:var(--navy); }
+.callout.warn{ background:var(--gold-tint); border-inline-start-color:var(--gold); }
+.callout ul{ margin:8px 0 0 0; }
+
+/* pill badges row (abstract solvers) */
+.pill-row{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 20px; }
+.pill{
+  background:var(--pill-tint, var(--navy-tint));
+  color:var(--pill-color, var(--navy));
+  border:1px solid color-mix(in srgb, var(--pill-color, var(--navy)) 25%, transparent);
+  font-size:13px; font-weight:700;
+  padding:9px 16px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.pill .pill-dot{ width:7px; height:7px; border-radius:50%; background:var(--pill-color, var(--navy)); }
+
+/* algo identity grid (4 cards section 3) */
+.algo-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:13px; margin-top:18px; }
+@media (max-width:860px){ .algo-grid{ grid-template-columns:repeat(2, 1fr);} }
+@media (max-width:520px){ .algo-grid{ grid-template-columns:1fr;} }
+.algo-card{
+  background:var(--algo-tint, var(--navy-tint));
+  border:1px solid var(--border);
+  border-top:3px solid var(--algo-color, var(--navy));
+  border-radius:var(--radius-m);
+  padding:16px 15px;
+}
+.algo-card .algo-name{
+  font-size:14px; font-weight:800; color:var(--algo-color, var(--navy));
+  margin-bottom:8px; display:flex; align-items:center; gap:7px;
+}
+.algo-card p{ font-size:12.8px; color:var(--ink-soft); margin:0; text-align:justify; }
+
+/* data tables */
+.table-wrap{ overflow-x:auto; margin:16px 0 6px; border-radius:var(--radius-s); border:1px solid var(--border); }
+table.data-table{ width:100%; border-collapse:collapse; font-size:13.3px; }
+table.data-table thead tr{ background:var(--table-color, var(--navy)); color:#fff; }
+table.data-table th{ padding:12px 14px; text-align:right; font-weight:700; white-space:nowrap; }
+table.data-table td{ padding:12px 14px; border-top:1px solid var(--border); color:var(--ink-soft); vertical-align:top; }
+table.data-table tbody tr:nth-child(even){ background:#fafbfd; }
+table.data-table td.label-cell{ font-weight:700; color:var(--ink); white-space:nowrap; }
+table.data-table td.mono-cell{ font-family:'JetBrains Mono',monospace; direction:ltr; text-align:left; font-size:12.5px; }
+
+/* step list */
+.steps{ list-style:none; margin:14px 0; padding:0; border-inline-start:2px solid var(--border); padding-inline-start:18px; }
+.steps li{ margin-bottom:14px; font-size:14px; }
+.steps li:last-child{ margin-bottom:0; }
+.steps b{ color:var(--ink); }
+
+/* code blocks */
+.codeblock{
+  background:var(--navy-deep);
+  color:#dfe7f5;
+  border-radius:var(--radius-m);
+  padding:18px 20px;
+  margin:16px 0;
+  overflow-x:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.6px;
+  line-height:1.85;
+  direction:ltr;
+  text-align:left;
+  box-shadow:var(--shadow-card);
+}
+.codeblock .cb-title{
+  font-family:'Vazirmatn',sans-serif;
+  direction:rtl; text-align:right;
+  color:#9fb3d6; font-size:11.5px; font-weight:700;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  padding-bottom:9px; margin-bottom:12px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.codeblock .cb-dots{ display:inline-flex; gap:5px; }
+.codeblock .cb-dots span{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+.codeblock pre{ margin:0; white-space:pre; }
+.tok-c{ color:#7c93b8; font-style:italic; } /* comments */
+.tok-k{ color:#e8a973; } /* keywords */
+.tok-s{ color:#a7d489; } /* strings */
+.tok-f{ color:#7fb4e8; } /* functions/defs */
+.tok-n{ color:#d6a8e8; } /* numbers */
+.tok-t{ color:#f0c987; } /* types/builtins */
+
+/* figures */
+.figure{ margin:18px 0; text-align:center; }
+.figure img{
+  max-width:100%; border-radius:var(--radius-m);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-card);
+}
+.figure-caption{
+  font-size:12px; color:var(--ink-muted); margin-top:9px;
+}
+.img-fallback{
+  display:none;
+  background:var(--navy-tint);
+  border:1.5px dashed var(--navy-soft);
+  border-radius:var(--radius-m);
+  padding:40px 20px;
+  color:var(--navy-soft);
+  font-size:13px;
+}
+.img-fallback .fb-icon{ font-size:26px; display:block; margin-bottom:10px; }
+.img-fallback b{ color:var(--navy); display:block; margin-bottom:4px; font-size:13.5px;}
+
+/* svg diagram frame */
+.diagram-frame{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-m);
+  padding:18px;
+  margin:18px 0;
+  box-shadow:var(--shadow-card);
+}
+.diagram-frame svg{ width:100%; height:auto; display:block; }
+.diagram-caption{ font-size:12px; color:var(--ink-muted); text-align:center; margin-top:10px;}
+
+/* math */
+.katex{ font-size:1em; }
+.math-block{ overflow-x:auto; padding:6px 0; }
+
+/* conclusion tag */
+.conclusion{
+  margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);
+  font-size:13.8px;
+}
+.conclusion b{ color:var(--card-accent, var(--navy)); }
+
+/* gui mechanism list */
+.mech-list{ list-style:none; margin:14px 0 0; padding:0; }
+.mech-list li{
+  position:relative; padding-inline-start:24px; margin-bottom:12px; font-size:13.8px;
+}
+.mech-list li::before{
+  content:"▪"; position:absolute; inset-inline-start:0; color:var(--card-accent, var(--navy)); font-size:11px; top:5px;
+}
+
+/* back to top */
+#back-to-top{
+  position:fixed; bottom:26px; left:26px; z-index:50;
+  width:42px; height:42px; border-radius:50%;
+  background:var(--navy); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-pop);
+  opacity:0; pointer-events:none; transform:translateY(10px);
+  transition:all .25s ease; text-decoration:none; font-size:16px;
+}
+#back-to-top.show{ opacity:1; pointer-events:auto; transform:translateY(0); }
+
+/* footer */
+footer{
+  background:var(--navy-deep); color:#aebede;
+  padding:34px 0; font-size:12.5px; text-align:center;
+}
+footer b{ color:#e7edf9; }
+
+/* print */
+@media print{
+  #progress-bar, #back-to-top{ display:none !important; }
+  .card, .toc-card, .cover{ box-shadow:none !important; }
+  body{ background:#fff; }
+  .chapter{ break-inside:avoid-page; }
+}
+
+/* small helper */
+.divider{ height:1px; background:var(--border); margin:36px 0; }
+.kicker-icon{ font-size:15px; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- =========================================================
+     COVER
+========================================================== -->
+<header class="cover">
+  <div class="container cover-inner">
+    <span class="cover-eyebrow"><span class="dot"></span> گزارش پروژه درس هوش مصنوعی</span>
+    <h1>حل مسئله فروشنده دوره‌گرد (TSP) با ترکیب رویکردهای منطق‌گرا، هوش جمعی و تکاملی</h1>
+    <p class="cover-sub">
+      تشریح ساختار، معماری و الگوریتم‌های پیاده‌سازی‌شده برای حل مسئله فروشنده دوره‌گرد بر پایه‌ی سه حلگر مستقل
+      و یک لایه‌ی مشاور هوشمند، همراه با تحلیل پیچیدگی محاسباتی و ارزیابی رفتار هر رویکرد با افزایش ابعاد مسئله.
+    </p>
+    <div class="cover-badges">
+      <span class="cover-badge">نام و نام‌خانوادگی: <b>معین حسن‌پور</b></span>
+      <span class="cover-badge">شماره دانشجویی: <b>40032313</b></span>
+      <span class="cover-badge">درس: <b>هوش مصنوعی</b></span>
+    </div>
+    <div class="cover-pillars">
+      <div class="cover-pillar" style="--pillar-color:var(--c-prolog)">
+        <div class="pillar-tag">حلگر دقیق</div>
+        <div class="pillar-name">Prolog · Held-Karp</div>
+      </div>
+      <div class="cover-pillar" style="--pillar-color:var(--c-aco)">
+        <div class="pillar-tag">هوش جمعی</div>
+        <div class="pillar-name">Ant Colony Optimization</div>
+      </div>
+      <div class="cover-pillar" style="--pillar-color:var(--c-ga)">
+        <div class="pillar-tag">الگوریتم تکاملی</div>
+        <div class="pillar-name">Genetic Algorithm + ERX</div>
+      </div>
+      <div class="cover-pillar" style="--pillar-color:var(--c-advisor)">
+        <div class="pillar-tag">لایه فراابتکاری</div>
+        <div class="pillar-name">Decision Tree Advisor</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- =========================================================
+     TABLE OF CONTENTS
+========================================================== -->
+<section class="toc-section">
+  <div class="container">
+    <div class="toc-head">
+      <h2>فهرست مطالب</h2>
+      <span class="toc-note">برای انتقال به هر بخش، روی عنوان آن کلیک کنید</span>
+    </div>
+
+    <div class="toc-grid">
+
+      <div class="toc-card" style="--toc-color:var(--navy)">
+        <span class="toc-num">۱</span><a class="toc-title" href="#overview">چکیده و معماری کلی پروژه</a>
+        <ul class="toc-sub">
+          <li><a href="#abstract">چکیده پروژه و راهبرد محوری</a></li>
+          <li><a href="#architecture">نقش فایل‌های اصلی در معماری</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--navy)">
+        <span class="toc-num">۲</span><a class="toc-title" href="#data-layer">لایه داده: از مختصات تا ماتریس فواصل</a>
+        <ul class="toc-sub">
+          <li><a href="#haversine">فرمول هاورساین و ساخت ماتریس فواصل</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--navy)">
+        <span class="toc-num">۳</span><a class="toc-title" href="#algorithm-selection">تحلیل ملاک‌های انتخاب الگوریتم‌ها</a>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--c-aco)">
+        <span class="toc-num">۴</span><a class="toc-title" href="#aco">الگوریتم کلونی مورچگان (ACO)</a>
+        <ul class="toc-sub">
+          <li><a href="#aco-intro">پیش‌زمینه و الهام طبیعی</a></li>
+          <li><a href="#aco-howitworks">مکانیزم حل مسئله</a></li>
+          <li><a href="#aco-evaluation">تحلیل فنی و ارزیابی عملکرد</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--c-ga)">
+        <span class="toc-num">۵</span><a class="toc-title" href="#ga">الگوریتم ژنتیک (GA + ERX)</a>
+        <ul class="toc-sub">
+          <li><a href="#ga-intro">پیش‌زمینه و الهام طبیعی</a></li>
+          <li><a href="#ga-howitworks">مکانیزم حل مسئله TSP</a></li>
+          <li><a href="#ga-evaluation">تحلیل فنی و ارزیابی عملکرد</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--c-prolog)">
+        <span class="toc-num">۶</span><a class="toc-title" href="#prolog">حلگر دقیق پرولوگ (Held-Karp)</a>
+        <ul class="toc-sub">
+          <li><a href="#prolog-why">چرا پرولوگ انتخاب شد؟</a></li>
+          <li><a href="#prolog-strategy">اهداف راهبردی دوگانه پرولوگ در پروژه</a></li>
+          <li><a href="#prolog-heldkarp">الگوریتم Held-Karp و رابطه بازگشتی DP</a></li>
+          <li><a href="#prolog-bitmask-tabling">مکانیزم‌های Bitmask و Tabling</a></li>
+          <li><a href="#prolog-evaluation">تحلیل فنی و ارزیابی عملکرد</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--c-advisor)">
+        <span class="toc-num">۷</span><a class="toc-title" href="#advisor">موتور مشاور هوشمند (Decision Tree)</a>
+        <ul class="toc-sub">
+          <li><a href="#advisor-philosophy">فلسفه ماژول مشاور هوشمند</a></li>
+          <li><a href="#advisor-model-package">بسته مدل و پایگاه داده فرضی</a></li>
+          <li><a href="#advisor-data-generation">مهندسی داده: تولید شهرهای مصنوعی</a></li>
+          <li><a href="#advisor-features">ویژگی‌های ورودی و برچسب‌های خروجی</a></li>
+          <li><a href="#advisor-runtime-flow">روال اجرا در رابط کاربری</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--navy)">
+        <span class="toc-num">۸</span><a class="toc-title" href="#synthesis">جمع‌بندی مقایسه‌ای و رفتار مقیاس‌پذیری</a>
+        <ul class="toc-sub">
+          <li><a href="#comparison-table">مقایسه نهایی سه رویکرد</a></li>
+          <li><a href="#scaling-behavior">رفتار سیستم با افزایش ابعاد مسئله</a></li>
+        </ul>
+      </div>
+
+      <div class="toc-card" style="--toc-color:var(--navy)">
+        <span class="toc-num">۹</span><a class="toc-title" href="#walkthrough">نمونه خروجی و رابط کاربری برنامه</a>
+        <ul class="toc-sub">
+          <li><a href="#ui-data-config">پیکربندی و بارگذاری لایه داده</a></li>
+          <li><a href="#ui-advisor-engine">لایه تحلیل هوشمند و مشاور</a></li>
+          <li><a href="#ui-live-solver">پایش زنده و همگرایی حل</a></li>
+          <li><a href="#ui-benchmark">داشبورد بنچمارک و ارزیابی</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="container"><div class="divider"></div></div>
+
+<main class="container">
+
+<!-- =========================================================
+     CHAPTER 1 — OVERVIEW
+========================================================== -->
+<section class="chapter" id="overview">
+  <div class="chapter-head" style="--chapter-color:var(--navy)">
+    <span class="chapter-index">۱</span>
+    <div>
+      <span class="chapter-kicker">فصل یکم</span>
+      <h2>چکیده و معماری کلی پروژه</h2>
+    </div>
+  </div>
+
+  <div class="card" id="abstract" style="--card-accent:var(--navy)">
+    <h3>چکیده پروژه و راهبرد محوری</h3>
+    <p class="lead">
+      هدف اصلی این پروژه، حل و مقایسه همه‌جانبه‌ی مسئله فروشنده دوره‌گرد (TSP) روی مجموعه‌ای از گراف‌های شهری است.
+      در گام نخست، سیستم داده‌های جغرافیایی را از طریق فراخوانی API یا سامانه پیش‌کَش (Cache) محلی واکشی می‌کند و
+      با استفاده از فرمول هاورساین، ماتریس فواصل میان شهرها را استخراج می‌نماید. در ادامه، سه رویکرد ساختاری
+      متفاوت برای حل مسئله به‌کار گرفته می‌شوند:
+    </p>
+
+    <div class="pill-row">
+      <span class="pill" style="--pill-color:var(--c-aco); --pill-tint:var(--c-aco-tint);"><span class="pill-dot"></span>کلونی مورچگان (ACO)</span>
+      <span class="pill" style="--pill-color:var(--c-ga); --pill-tint:var(--c-ga-tint);"><span class="pill-dot"></span>الگوریتم ژنتیک با ERX</span>
+      <span class="pill" style="--pill-color:var(--c-prolog); --pill-tint:var(--c-prolog-tint);"><span class="pill-dot"></span>حلگر دقیق Prolog (Held-Karp)</span>
+    </div>
+
+    <p>
+      در کنار این سه حلگر، یک مدل درخت تصمیم (Decision Tree) نیز به‌عنوان لایه‌ی ارزیاب ساختاری عمل می‌کند تا بر
+      اساس ویژگی‌های گراف ورودی، الگوریتم بهینه را به کاربر پیشنهاد دهد.
+    </p>
+
+    <div class="callout">
+      <b>راهبرد محوری سیستم:</b><br>
+      معماری این پروژه بر این ایده استوار است که برای ابعاد کوچک گراف از پاسخ کاملاً دقیق و قطعی استفاده شود؛
+      برای ابعاد متوسط و بزرگ به سراغ روش‌های فراابتکاری (Metaheuristic) هدایت شویم؛ و در نهایت با پیاده‌سازی
+      مدل یادگیری ماشین، انتخاب الگوریتم را از حالت دستی و حدسی به یک فرآیند سیستماتیک و هوشمند تبدیل کنیم.
+    </div>
+  </div>
+
+  <div class="card" id="architecture" style="--card-accent:var(--navy)">
+    <h3>نقش فایل‌های اصلی پروژه در معماری</h3>
+    <p>
+      به‌منظور درک دقیق‌تر ساختار پیاده‌سازی‌شده، پیش از معرفی جدول وظایف، نمای کلی از نحوه‌ی تعامل ماژول‌های
+      پروژه با یکدیگر ترسیم شده است. همان‌طور که در نمودار زیر دیده می‌شود، رابط گرافیکی داده‌های جغرافیایی را
+      به ماتریس فواصل تبدیل می‌کند، این ماتریس به‌صورت موازی در اختیار هر سه حلگر قرار می‌گیرد، و به‌طور مستقل
+      از آن، مدل مشاور هوشمند که به‌صورت آفلاین آموزش دیده، در زمان اجرا به رابط کاربری متصل می‌شود.
+    </p>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 880 565" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="نمودار معماری ماژول‌های پروژه">
+        <defs>
+          <marker id="arrow-navy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--navy-soft)"/>
+          </marker>
+          <marker id="arrow-advisor" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--c-advisor)"/>
+          </marker>
+        </defs>
+
+        <!-- main.py -->
+        <rect x="350" y="14" width="180" height="44" rx="9" fill="var(--navy-deep)"/>
+        <text x="440" y="32" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif">main.py</text>
+        <text x="440" y="48" text-anchor="middle" fill="#b9c6dc" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">نقطه ورود برنامه</text>
+
+        <line x1="440" y1="58" x2="440" y2="84" stroke="var(--navy-soft)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+
+        <!-- gui.py -->
+        <rect x="190" y="86" width="500" height="46" rx="9" fill="var(--navy)"/>
+        <text x="440" y="105" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif">gui.py — رابط گرافیکی PyQt6</text>
+        <text x="440" y="121" text-anchor="middle" fill="#c3cfe3" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">مدیریت ترد‌ها (QThread)، رسم مسیر، نمایش پیشنهاد مشاور</text>
+
+        <!-- left branch: core.py -->
+        <line x1="300" y1="132" x2="225" y2="166" stroke="var(--navy-soft)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <rect x="120" y="168" width="210" height="46" rx="9" fill="var(--navy-soft)"/>
+        <text x="225" y="187" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif">core.py</text>
+        <text x="225" y="203" text-anchor="middle" fill="#e3e9f5" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">کَش محلی + فرمول Haversine</text>
+
+        <line x1="225" y1="214" x2="225" y2="240" stroke="var(--navy-soft)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <rect x="115" y="242" width="220" height="40" rx="20" fill="var(--navy-tint)" stroke="var(--navy-soft)" stroke-width="1.3"/>
+        <text x="225" y="267" text-anchor="middle" fill="var(--navy)" font-size="11.5" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif">ماتریس فواصل (N × N)</text>
+
+        <!-- fan out to 3 solvers -->
+        <line x1="170" y1="282" x2="105" y2="328" stroke="var(--c-aco)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <line x1="225" y1="282" x2="270" y2="328" stroke="var(--c-ga)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <line x1="280" y1="282" x2="450" y2="328" stroke="var(--c-prolog)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+
+        <!-- ACO box -->
+        <rect x="14" y="330" width="190" height="62" rx="9" fill="var(--c-aco-tint)" stroke="var(--c-aco)" stroke-width="1.4"/>
+        <text x="109" y="354" text-anchor="middle" fill="var(--c-aco)" font-size="12" font-weight="800" font-family="Vazirmatn, Tahoma, sans-serif">solvers.py</text>
+        <text x="109" y="371" text-anchor="middle" fill="var(--ink-soft)" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">کلونی مورچگان (ACO)</text>
+        <text x="109" y="384" text-anchor="middle" fill="#9a6422" font-size="8.5" font-family="Vazirmatn, Tahoma, sans-serif">هوش جمعی</text>
+
+        <!-- GA box -->
+        <rect x="222" y="330" width="190" height="62" rx="9" fill="var(--c-ga-tint)" stroke="var(--c-ga)" stroke-width="1.4"/>
+        <text x="317" y="354" text-anchor="middle" fill="var(--c-ga)" font-size="12" font-weight="800" font-family="Vazirmatn, Tahoma, sans-serif">solvers.py</text>
+        <text x="317" y="371" text-anchor="middle" fill="var(--ink-soft)" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">الگوریتم ژنتیک + ERX</text>
+        <text x="317" y="384" text-anchor="middle" fill="#0e6047" font-size="8.5" font-family="Vazirmatn, Tahoma, sans-serif">تکاملی</text>
+
+        <!-- Prolog box -->
+        <rect x="430" y="330" width="200" height="62" rx="9" fill="var(--c-prolog-tint)" stroke="var(--c-prolog)" stroke-width="1.4"/>
+        <text x="530" y="354" text-anchor="middle" fill="var(--c-prolog)" font-size="12" font-weight="800" font-family="Vazirmatn, Tahoma, sans-serif">prolog_bridge.py</text>
+        <text x="530" y="371" text-anchor="middle" fill="var(--ink-soft)" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">پل ارتباطی پایتون ↔ پرولوگ</text>
+        <text x="530" y="384" text-anchor="middle" fill="#46327f" font-size="8.5" font-family="Vazirmatn, Tahoma, sans-serif">منطق‌گرا</text>
+
+        <line x1="530" y1="392" x2="530" y2="412" stroke="var(--c-prolog)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <rect x="430" y="414" width="200" height="38" rx="8" fill="var(--navy-deep)"/>
+        <text x="530" y="438" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif" class="mono">tsp_solver.pl</text>
+
+        <!-- right branch: train_model.py (offline) -->
+        <line x1="640" y1="132" x2="725" y2="166" stroke="var(--c-advisor)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-advisor)"/>
+        <rect x="620" y="168" width="220" height="46" rx="9" fill="none" stroke="var(--c-advisor)" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="730" y="187" text-anchor="middle" fill="var(--c-advisor)" font-size="12" font-weight="800" font-family="Vazirmatn, Tahoma, sans-serif">train_model.py</text>
+        <text x="730" y="203" text-anchor="middle" fill="var(--ink-muted)" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif">اسکریپت آفلاین آموزش مدل</text>
+
+        <line x1="730" y1="214" x2="730" y2="240" stroke="var(--c-advisor)" stroke-width="2" marker-end="url(#arrow-advisor)"/>
+        <rect x="620" y="242" width="220" height="42" rx="9" fill="var(--c-advisor-tint)" stroke="var(--c-advisor)" stroke-width="1.4"/>
+        <text x="730" y="262" text-anchor="middle" fill="var(--c-advisor)" font-size="11.5" font-weight="700" font-family="Vazirmatn, Tahoma, sans-serif" class="mono">tree_classifier.pkl</text>
+        <text x="730" y="277" text-anchor="middle" fill="var(--ink-muted)" font-size="9" font-family="Vazirmatn, Tahoma, sans-serif">مدل + Scaler + نگاشت برچسب‌ها</text>
+
+        <path d="M 730 284 C 730 320, 690 -40, 650 84" fill="none" stroke="var(--c-advisor)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-advisor)"/>
+        <text x="845" y="200" text-anchor="middle" fill="var(--c-advisor)" font-size="9.5" font-family="Vazirmatn, Tahoma, sans-serif" transform="rotate(90 845 200)">تب مشاور هوشمند</text>
+
+        <!-- legend -->
+        <line x1="20" y1="478" x2="60" y2="478" stroke="var(--navy-soft)" stroke-width="2" marker-end="url(#arrow-navy)"/>
+        <text x="68" y="482" fill="var(--ink-muted)" font-size="10.5" font-family="Vazirmatn, Tahoma, sans-serif">جریان زمان اجرا (Runtime)</text>
+
+        <line x1="230" y1="478" x2="270" y2="478" stroke="var(--c-advisor)" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-advisor)"/>
+        <text x="278" y="482" fill="var(--ink-muted)" font-size="10.5" font-family="Vazirmatn, Tahoma, sans-serif">آموزش آفلاین مدل مشاور</text>
+
+        <rect x="470" y="470" width="14" height="14" rx="3" fill="var(--c-prolog-tint)" stroke="var(--c-prolog)"/>
+        <text x="492" y="482" fill="var(--ink-muted)" font-size="10.5" font-family="Vazirmatn, Tahoma, sans-serif">منطق‌گرا</text>
+        <rect x="570" y="470" width="14" height="14" rx="3" fill="var(--c-aco-tint)" stroke="var(--c-aco)"/>
+        <text x="592" y="482" fill="var(--ink-muted)" font-size="10.5" font-family="Vazirmatn, Tahoma, sans-serif">هوش جمعی</text>
+        <rect x="670" y="470" width="14" height="14" rx="3" fill="var(--c-ga-tint)" stroke="var(--c-ga)"/>
+        <text x="692" y="482" fill="var(--ink-muted)" font-size="10.5" font-family="Vazirmatn, Tahoma, sans-serif">تکاملی</text>
+
+        <text x="440" y="525" text-anchor="middle" fill="var(--ink-muted)" font-size="10" font-family="Vazirmatn, Tahoma, sans-serif">
+          نمودار ۱ — نمای کلی تعامل ماژول‌های پروژه: از ورودی جغرافیایی تا سه حلگر مستقل و لایه‌ی مشاور هوشمند
+        </text>
+      </svg>
+    </div>
+
+    <p>جزئیات وظایف و نقش هر یک از ماژول‌های پروژه در جدول زیر تفکیک شده است:</p>
+
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--navy)">
+        <thead><tr><th style="width:25%">فایل منبع</th><th style="width:75%">نقش در معماری سیستم</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell mono-cell">main.py</td><td>نقطه ورود اصلی برنامه؛ مدیریت مسیرها، فرآیند ثبت وقایع (Logging)، بررسی وابستگی‌های حیاتی و مقداردهی اولیه پنجره اصلی.</td></tr>
+          <tr><td class="label-cell mono-cell">core.py</td><td>مدیریت داده‌های جغرافیایی، پیاده‌سازی مکانیزم حافظه پنهان (Cache)، محاسبه فواصل با فرمول Haversine و تشکیل ماتریس فواصل گراف.</td></tr>
+          <tr><td class="label-cell mono-cell">solvers.py</td><td>پیاده‌سازی الگوریتم‌های فراابتکاری؛ شامل بهینه‌سازی کلونی مورچگان (ACO) و الگوریتم ژنتیک با اپراتور تقاطع بازترکیب یال (ERX).</td></tr>
+          <tr><td class="label-cell mono-cell" style="color:var(--c-prolog)">tsp_solver.pl</td><td>حلگر منطقی و دقیق مسئله TSP بر پایه رویکرد برنامه‌نویسی پویا (Held-Karp)، به‌همراه بهینه‌سازی‌های Bitmask و Tabling در محیط SWI-Prolog.</td></tr>
+          <tr><td class="label-cell mono-cell">prolog_bridge.py</td><td>لایه واسط میان پایتون و پرولوگ؛ وظیفه بارگذاری اسکریپت منطقی، نگاشت و انتقال ماتریس فواصل و تبدیل خروجی‌های پرولوگ به ساختارهای داده پایتون.</td></tr>
+          <tr><td class="label-cell mono-cell" style="color:var(--c-advisor)">train_model.py</td><td>تولید مجموعه داده‌های ساختگی (Synthetic)، استخراج ویژگی‌های توپولوژیک و ساختاری از گراف، آموزش مدل درخت تصمیم (Decision Tree) و سریال‌سازی فایل مدل مشاور.</td></tr>
+          <tr><td class="label-cell mono-cell">gui.py</td><td>مدیریت لایه گرافیکی؛ اجرای الگوریتم‌های سنگین محاسباتی در ریسمان‌های مجزا (Threading) جهت جلوگیری از انجماد واسط کاربری، رسم گرافیکی مسیرها و یکپارچه‌سازی خروجی مدل مشاور.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     CHAPTER 2 — DATA LAYER
+========================================================== -->
+<section class="chapter" id="data-layer">
+  <div class="chapter-head" style="--chapter-color:var(--navy)">
+    <span class="chapter-index">۲</span>
+    <div>
+      <span class="chapter-kicker">فصل دوم</span>
+      <h2>لایه داده: نگاشت مختصات جغرافیایی به ماتریس فواصل</h2>
+    </div>
+  </div>
+
+  <div class="card" id="haversine" style="--card-accent:var(--navy)">
+    <p class="lead">
+      مسئله فروشنده دوره‌گرد (TSP) نیازمند یک گراف کامل وزن‌دار $G=(V, E)$ است که در آن بین هر جفت رأس (شهر)
+      یک یال با وزن مشخص تعریف شده باشد. در این پروژه، موقعیت هر شهر بر اساس طول جغرافیایی ($\lambda$) و عرض
+      جغرافیایی ($\phi$) ذخیره می‌شود. برای محاسبه فاصله واقعی میان دو نقطه، به‌جای فاصله اقلیدسی ساده —
+      که انحنای کره زمین را نادیده می‌گیرد — از <b>فرمول هاورساین (Haversine Formula)</b> استفاده شده است.
+    </p>
+
+    <div class="callout" style="text-align:center;">
+      <div style="font-size:12.5px; color:var(--ink-muted); margin-bottom:10px;">روابط ریاضی فرمول هاورساین</div>
+      <div class="math-block">$$a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1) \cdot \cos(\phi_2) \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)$$</div>
+      <div class="math-block">$$d = 2R \cdot \operatorname{atan2}\left(\sqrt{a},\ \sqrt{1-a}\right)$$</div>
+    </div>
+
+    <p>
+      که در آن $R$ شعاع میانگین کره زمین، $\Delta\phi$ تفاضل عرض‌های جغرافیایی و $\Delta\lambda$ تفاضل طول‌های
+      جغرافیایی دو نقطه است. پس از محاسبه‌ی فواصل دو‌به‌دو، ماتریس مجاورت سیستم تشکیل می‌شود؛ و از آنجا که گراف
+      مورد نظر یک گراف کامل است، ابعاد ماتریس نهایی دقیقاً برابر $N \times N$ خواهد بود، که در آن $N$
+      نشان‌دهنده‌ی تعداد شهرهاست.
+    </p>
+
+    <div class="callout warn">
+      <b>تحلیل پیچیدگی محاسباتی لایه داده</b>
+      <ul>
+        <li><b>پیچیدگی زمانی (Time Complexity):</b> به دلیل نیاز به محاسبه فاصله برای تمامی زوج‌شهرها، فرآیند ساخت ماتریس دارای پیچیدگی زمانی $\mathcal{O}(N^2)$ است.</li>
+        <li><b>پیچیدگی فضایی (Space Complexity):</b> ذخیره‌سازی این ماتریس متراکم و هم‌بند، نیازمند تخصیص حافظه‌ای از مرتبه $\mathcal{O}(N^2)$ در سیستم خواهد بود.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     CHAPTER 3 — ALGORITHM SELECTION CRITERIA
+========================================================== -->
+<section class="chapter" id="algorithm-selection">
+  <div class="chapter-head" style="--chapter-color:var(--navy)">
+    <span class="chapter-index">۳</span>
+    <div>
+      <span class="chapter-kicker">فصل سوم</span>
+      <h2>تحلیل ملاک‌های انتخاب الگوریتم‌ها</h2>
+    </div>
+  </div>
+
+  <div class="card" style="--card-accent:var(--navy)">
+    <p class="lead">
+      مسئله فروشنده دوره‌گرد (TSP) از دایره مسائل کلاسیک $\text{NP-Hard}$ است؛ به این معنا که با افزایش خطی
+      تعداد شهرها، فضای جست‌وجو و تعداد مسیرهای ممکن به‌صورت فوق‌نمایی ($(N-1)!/2$) رشد می‌کند. به همین دلیل،
+      اتکا به یک الگوریتم واحد برای تمامی ابعاد گراف منطقی نیست. معماری این پروژه بر پایه‌ی سه دیدگاه محاسباتی
+      متفاوت، در کنار یک لایه هوش پیش‌بین، شکل گرفته است:
+    </p>
+
+    <div class="algo-grid">
+      <div class="algo-card" style="--algo-color:var(--c-prolog); --algo-tint:var(--c-prolog-tint);">
+        <div class="algo-name">Prolog / Held-Karp</div>
+        <p>برای دستیابی به پاسخ قطعی (Exact Solution) و ایجاد یک معیار سنجش (Baseline) دقیق. این رویکرد برای مقادیر کوچک $N$ بهینه‌ترین انتخاب است، چرا که با روش برنامه‌نویسی پویا، بهینه واقعی را تضمین می‌کند.</p>
+      </div>
+      <div class="algo-card" style="--algo-color:var(--c-aco); --algo-tint:var(--c-aco-tint);">
+        <div class="algo-name">Ant Colony Optimization</div>
+        <p>برای جست‌وجوی احتمالاتی و توازی ضمنی در فضای مسئله. این الگوریتم با بهره‌گیری از مفهوم فرومون مصنوعی و ضریب تبخیر آن، از دانش انباشته‌شده در تکرارهای قبلی برای همگرایی به سمت مسیرهای بهینه استفاده می‌کند.</p>
+      </div>
+      <div class="algo-card" style="--algo-color:var(--c-ga); --algo-tint:var(--c-ga-tint);">
+        <div class="algo-name">Genetic Algorithm + ERX</div>
+        <p>برای مدیریت فضاهای جایگشتی بسیار بزرگ در ابعاد بالا. استفاده از اپراتور تقاطع بازترکیب یال (ERX) اختصاصاً برای TSP انتخاب شده، زیرا مجاورت یال‌های باکیفیت والدین را حفظ می‌کند و یال‌های تصادفی نامطلوب وارد فرزند نمی‌کند.</p>
+      </div>
+      <div class="algo-card" style="--algo-color:var(--c-advisor); --algo-tint:var(--c-advisor-tint);">
+        <div class="algo-name">Decision Tree Advisor</div>
+        <p>به‌عنوان هسته هوشمند مدیریت فراابتکاری (Meta-heuristic). این مدل با تحلیل توپولوژی گراف ورودی بر اساس معیارهایی چون چگالی، انحراف معیار فواصل و ساختارهای خوشه‌ای، الگوریتم بهینه را پیش‌بینی و پیشنهاد می‌دهد.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CHAPTER 4 — ACO
+========================================================== -->
+<section class="chapter" id="aco">
+  <div class="chapter-head" style="--chapter-color:var(--c-aco)">
+    <span class="chapter-index">۴</span>
+    <div>
+      <span class="chapter-kicker">فصل چهارم · هوش جمعی</span>
+      <h2>الگوریتم کلونی مورچگان (Ant Colony Optimization)</h2>
+    </div>
+  </div>
+
+  <div class="card" id="aco-intro" style="--card-accent:var(--c-aco)">
+    <h3>پیش‌زمینه و الهام طبیعی</h3>
+    <p>
+      الگوریتم کلونی مورچگان یا <span class="mono">Ant Colony Optimization</span> یکی از الگوریتم‌های هوش جمعی
+      (Swarm Intelligence) است که در سال ۱۹۹۲ توسط مارکو دوریگو (Marco Dorigo) معرفی شد. این روش به‌طور کامل
+      بر اساس <b>رفتار واقعی مورچه‌ها در طبیعت</b> برای یافتن کوتاه‌ترین مسیر میان لانه و منابع غذایی مدل‌سازی
+      شده است.
+    </p>
+    <h4>مورچه‌ها در طبیعت چگونه کار می‌کنند؟</h4>
+    <p>
+      مورچه‌ها بینایی بسیار ضعیفی دارند، اما برای جهت‌یابی و ارتباط با یکدیگر از ماده‌ای شیمیایی به نام
+      <b>فرومون (Pheromone)</b> استفاده می‌کنند. فرآیند کشف مسیر به این صورت رخ می‌دهد:
+    </p>
+    <ul>
+      <li><b>حرکت تصادفی اولیه:</b> در ابتدا که محیط ناشناخته است، مورچه‌ها به‌صورت تصادفی به جست‌وجو می‌پردازند و حین حرکت، روی زمین فرومون ترشح می‌کنند.</li>
+      <li><b>تأثیر طول مسیر بر سرعت رفت‌وآمد:</b> مورچه‌هایی که به‌صورت اتفاقی وارد مسیری کوتاه‌تر می‌شوند، سریع‌تر به غذا می‌رسند و سریع‌تر به لانه برمی‌گردند؛ در نتیجه، در بازه زمانی مشخص، این مسیر کوتاه، رفت‌وآمد دسته‌جمعی بیشتری را نسبت به مسیرهای طولانی تجربه می‌کند.</li>
+      <li><b>تقویت امتیاز مسیر:</b> با افزایش رفت‌وآمد، غلظت فرومون روی مسیر کوتاه به‌سرعت بالا می‌رود. از آنجا که مورچه‌های بعدی تمایل دارند مسیرهای با فرومون غلیظ‌تر را انتخاب کنند، کل کلونی به‌مرور روی کوتاه‌ترین مسیر هم‌گرا می‌شود.</li>
+      <li><b>تبخیر فرومون (فراموشی خطاها):</b> فرومون‌ها روی زمین پایداری ابدی ندارند و به‌مرور زمان تبخیر می‌شوند. این ویژگی باعث می‌شود مسیرهای طولانی و اشتباه که کمتر استفاده می‌شوند، بوی خود را از دست بدهند و الگوریتم در الگوهای غلط قدیمی گیر نکند.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="aco-howitworks" style="--card-accent:var(--c-aco)">
+    <h3>الگوریتم کلونی مورچگان چگونه مسئله را حل می‌کند؟</h3>
+    <p>
+      الگوریتم کلونی مورچگان یک روش مبتنی بر تکرار و کار گروهی برای یافتن بهترین مسیر است. در این الگوریتم، به‌جای
+      آنکه یک فرمول ریاضی به‌تنهایی جواب را پیدا کند، مجموعه‌ای از عامل‌های محاسباتی (که آن‌ها را مورچه می‌نامیم)
+      بارها و بارها مسیرهای مختلف را امتحان می‌کنند تا به‌مرور زمان بهترین مسیر کشف شود.
+    </p>
+    <h4>۱. ارتباط الگوریتم با مسئله فروشنده دوره‌گرد</h4>
+    <p>برای پیاده‌سازی این الگوریتم روی مسئله پروژه، اجزای آن به این صورت تعریف شده‌اند:</p>
+    <ul>
+      <li><b>شهرها:</b> نقاطی هستند که مورچه‌ها باید به همه آن‌ها سر بزنند.</li>
+      <li><b>فاصله شهرها:</b> همان وزن یال‌ها در گراف است؛ هدف، رساندن مجموع این فواصل در کل سفر به کمترین مقدار ممکن است.</li>
+      <li><b>ماتریس فرومون:</b> جدول یا حافظه‌ی مشترکی در برنامه است. هرچه مسیر میان دو شهر بهتر و کوتاه‌تر باشد، ارزش عددی آن در این جدول بالاتر می‌رود تا مورچه‌های بعدی بیشتر به سمت آن جذب شوند.</li>
+    </ul>
+    <h4>۲. مراحل گام‌به‌گام حرکت و حل مسئله</h4>
+    <p>برنامه در هر مرحله (Iteration) کارهای زیر را برای رسیدن به جواب بهینه انجام می‌دهد:</p>
+    <ol class="steps">
+      <li><b>الف) ساخت مسیر توسط مورچه‌ها:</b> هر مورچه از یک شهر تصادفی شروع می‌کند. برای انتخاب شهر بعدی، به دو معیار توجه می‌کند: نزدیکی فاصله (هرچه نزدیک‌تر، بهتر) و امتیاز جدول فرومون برای آن مسیر. مورچه همچنین فهرستی داخلی دارد تا به‌خاطر بسپارد کدام شهرها را پیش‌تر دیده و دوباره به آن‌ها سر نزند.</li>
+      <li><b>ب) کاهش امتیازها (تبخیر فرومون):</b> در پایان هر مرحله، امتیاز تمام مسیرهای جدول کمی کاهش می‌یابد تا اثر مسیرهای طولانی و کم‌استفاده به‌مرور محو شود و فضای محاسباتی روی مسیرهای نادرست هدر نرود.</li>
+      <li><b>ج) پاداش به بهترین مسیر (به‌روزرسانی نخبگان):</b> طول مسیر تمام مورچه‌ها اندازه‌گیری می‌شود. طبق استراتژی پیاده‌سازی‌شده در پروژه، تنها مورچه‌ای که کوتاه‌ترین مسیر کل مرحله را یافته، اجازه دارد به جدول فرومون پاداش اضافه کرده و امتیاز مسیر خود را بالا ببرد.</li>
+    </ol>
+    <div class="conclusion"><b>نتیجه‌گیری:</b> با تکرار این فرآیند در طول اجرای برنامه، مسیرهای طولانی به دلیل تبخیر فراموش می‌شوند و در مقابل، مسیرهای کوتاه‌تر مدام امتیاز بیشتری می‌گیرند. در نهایت، امتیازهای جدول به سمتی هدایت می‌شوند که یک مسیر بهینه و فوق‌العاده کوتاه برای اتصال همه‌ی شهرها استخراج می‌شود.</div>
+  </div>
+
+  <div class="card" id="aco-evaluation" style="--card-accent:var(--c-aco)">
+    <h3>تحلیل فنی و ارزیابی عملکرد الگوریتم ACO</h3>
+    <p>به‌منظور ارزیابی نهایی ماژول کلونی مورچگان، ویژگی‌های ساختاری، مزایا، معایب و رفتارهای محاسباتی این الگوریتم در مواجهه با مسئله فروشنده دوره‌گرد در جدول زیر خلاصه شده است:</p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--c-aco)">
+        <thead><tr><th style="width:25%">معیار ارزیابی</th><th style="width:75%">تحلیل فنی و محاسباتی</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell">دلیل انتخاب الگوریتم</td><td>مسئله TSP ماهیتی کاملاً گرافی و مسیریابی دارد. الگوریتم ACO نیز اساساً بر پایه یافتن کوتاه‌ترین مسیر در گراف‌ها طراحی شده و انطباق کاملی با این مسئله دارد.</td></tr>
+          <tr><td class="label-cell">مزایای اصلی</td><td>انعطاف‌پذیری بالا و امکان تنظیم دقیق پارامترها؛ عملکرد بسیار مطلوب در ابعاد متوسط؛ توانایی بالا در ایجاد توازن میان «جست‌وجوی مسیرهای جدید» (Exploration) و «استفاده از مسیرهای خوب قبلی» (Exploitation).</td></tr>
+          <tr><td class="label-cell">معایب و محدودیت‌ها</td><td>پاسخ ۱۰۰٪ بهینه را تضمین نمی‌کند؛ وابستگی شدیدی به تنظیم اولیه پارامترها ($\alpha$، $\beta$، $\rho$ و تعداد مورچه‌ها) دارد و در صورت عدم تنظیم دقیق، احتمال گیر افتادن در بهینه‌های محلی (Local Optima) وجود دارد.</td></tr>
+          <tr><td class="label-cell">پیچیدگی زمانی (Time)</td><td>در این پیاده‌سازی، هر مورچه برای انتخاب هر شهر، شهرهای باقی‌مانده را پیمایش می‌کند که هزینه ساخت یک مسیر کامل را به $\mathcal{O}(N^2)$ می‌رساند. با احتساب تعداد تکرارها ($I$) و تعداد مورچه‌ها ($M$)، پیچیدگی کل برابر $\mathcal{O}(I \times M \times N^2)$ خواهد بود.</td></tr>
+          <tr><td class="label-cell">پیچیدگی فضایی (Memory)</td><td>ماتریس‌های اصلی سیستم — شامل ماتریس فاصله، ماتریس دید ابتکاری و ماتریس فرومون — همگی ابعادی برابر $N \times N$ دارند؛ از این رو میزان حافظه مصرفی از مرتبه $\mathcal{O}(N^2)$ است.</td></tr>
+          <tr><td class="label-cell">رفتار با افزایش ابعاد گراف</td><td>با رشد تعداد شهرها ($N$)، زمان محاسبه به‌صورت درجه‌دو رشد می‌کند. برای حفظ کیفیت خروجی در ابعاد بالا، باید تعداد تکرارها یا تعداد مورچه‌ها افزایش یابد، که این کار در عمل هزینه زمانی اجرای برنامه را بیش از رشد تئوری نشان می‌دهد.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     CHAPTER 5 — GENETIC ALGORITHM
+========================================================== -->
+<section class="chapter" id="ga">
+  <div class="chapter-head" style="--chapter-color:var(--c-ga)">
+    <span class="chapter-index">۵</span>
+    <div>
+      <span class="chapter-kicker">فصل پنجم · تکاملی</span>
+      <h2>الگوریتم ژنتیک (Genetic Algorithm + ERX)</h2>
+    </div>
+  </div>
+
+  <div class="card" id="ga-intro" style="--card-accent:var(--c-ga)">
+    <h3>پیش‌زمینه و الهام طبیعی</h3>
+    <p>
+      الگوریتم ژنتیک یا <span class="mono">Genetic Algorithm</span> یکی از قوی‌ترین روش‌های بهینه‌سازی هوشمند
+      است که از <b>نظریه تکامل داروین و اصول ژنتیک طبیعی</b> الهام گرفته شده است. این الگوریتم بر پایه‌ی این
+      ایده پیش می‌رود که در یک محیط رقابتی، نسل‌های بعدی به‌مرور زمان، با ترکیب خصوصیات خوب والدین خود، قوی‌تر
+      و باکیفیت‌تر می‌شوند.
+    </p>
+    <h4>تکامل در طبیعت چگونه کار می‌کند؟</h4>
+    <p>طبیعت برای اصلاح و ارتقای نسل موجودات زنده، از مکانیزم‌های کلیدی زیر بهره می‌گیرد:</p>
+    <ul>
+      <li><b>بقا و انتخاب برترین‌ها (Selection):</b> موجوداتی که سازگاری بیشتری با محیط دارند، شانس بالاتری برای زنده‌ماندن و انتقال ژن‌های خود به نسل بعدی خواهند داشت.</li>
+      <li><b>ترکیب ژن‌ها (Crossover):</b> فرزندان حاصل ترکیب ویژگی‌های ژنتیکی دو والد هستند؛ این کار باعث می‌شود ویژگی‌های مثبت هر دو والد در یک فرزند جمع شود.</li>
+      <li><b>جهش ژنتیکی (Mutation):</b> گاهی تغییراتی کاملاً تصادفی در ژن‌ها رخ می‌دهد. این جهش‌ها تنوع ایجاد می‌کنند و راه‌های جدیدی را باز می‌کنند که می‌توانند موجود را قدرتمندتر سازند.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="ga-howitworks" style="--card-accent:var(--c-ga)">
+    <h3>الگوریتم ژنتیک چگونه مسئله TSP را حل می‌کند؟</h3>
+    <h4>۱. ارتباط محاسباتی الگوریتم با مسئله فروشنده دوره‌گرد</h4>
+    <p>برای پیاده‌سازی این مکانیزم در پروژه، ویژگی‌های ژنتیکی به ساختار زیر نگاشت شده‌اند:</p>
+    <ul>
+      <li><b>کروموزوم (Chromosome):</b> هر مسیر کامل که شامل ترتیب مشخصی از شهرها باشد، یک کروموزوم (یا یک عضو از جمعیت) در نظر گرفته می‌شود.</li>
+      <li><b>جمعیت اولیه (Initial Population):</b> مجموعه‌ای از مسیرهای مختلف است. برای شروع هوشمندانه، این جمعیت شامل یک مسیر خوب حاصل از الگوریتم حریصانه (Greedy) و تعدادی مسیر تصادفی است تا توازن اولیه برقرار شود.</li>
+      <li><b>تابع شایستگی (Fitness Function):</b> معکوس طول مسیر است؛ یعنی هرچه مجموع فاصله‌های یک مسیر کمتر باشد، امتیاز شایستگی آن عضو بالاتر خواهد بود.</li>
+    </ul>
+    <h4>۲. مراحل تکاملی در هر نسل</h4>
+    <ol class="steps">
+      <li><b>الف) انتخاب والدها (Tournament Selection):</b> برنامه چند عضو را به‌صورت تصادفی از جمعیت جدا می‌کند و بهترین آن‌ها را از نظر شایستگی به‌عنوان والد انتخاب می‌کند تا ژن‌های برتر شانس بیشتری برای تکثیر داشته باشند.</li>
+      <li><b>ب) تقاطع بازترکیب یال (ERX):</b> این بخش قلب تپنده‌ی ماژول ژنتیک پروژه است. در مسئله TSP، کیفیت یک مسیر به یال‌ها (اتصالات دو شهر) بستگی دارد، نه به موقعیت ترتیبی آن‌ها در لیست. روش‌های تقاطع ساده (مانند One-Point Crossover) علاوه بر تولید فرزندان نامعتبر با شهرهای تکراری، اتصالات خوب را نیز از بین می‌برند. عملگر <span class="mono">ERX</span> یک جدول همسایگی از والدین می‌سازد و تلاش می‌کند فرزند جدیدی بسازد که بیشترین تعداد یال‌های باکیفیت والدین را به ارث ببرد.</li>
+      <li><b>ج) جهش (Mutation):</b> به‌صورت کاملاً تصادفی، جای دو شهر در مسیر با هم عوض می‌شود. این مکانیزم اجازه می‌دهد برنامه مسیرهای کاملاً جدید را نیز بیازماید و در بن‌بست الگوهای تکراری قدیمی گیر نکند.</li>
+    </ol>
+    <div class="conclusion"><b>نتیجه‌گیری:</b> با تکرار این فرآیند در نسل‌های متوالی، مسیرهای طولانی کم‌کم از جمعیت حذف می‌شوند و ژن‌های حاوی اتصالات کوتاه و بهینه تکثیر می‌یابند، تا جایی که بهترین مسیر ممکن حاصل شود.</div>
+  </div>
+
+  <div class="card" id="ga-evaluation" style="--card-accent:var(--c-ga)">
+    <h3>تحلیل فنی و ارزیابی عملکرد الگوریتم ژنتیک (GA)</h3>
+    <p>به‌منظور ارزیابی عملکرد ماژول تکاملی پروژه، ویژگی‌های ساختاری، نقاط قوت، محدودیت‌ها و تحلیل مرتبه اجرایی الگوریتم ژنتیک در جدول زیر تفکیک و خلاصه شده است:</p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--c-ga)">
+        <thead><tr><th style="width:25%">معیار ارزیابی</th><th style="width:75%">تحلیل فنی و محاسباتی</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell">دلیل انتخاب الگوریتم</td><td>مسئله TSP دارای فضای جست‌وجوی جایگشتی (Permutation) بسیار بزرگی است. الگوریتم ژنتیک برای جست‌وجو و یافتن راه‌حل در فضاهای بسیار بزرگ، گسسته و غیرخطی کارایی فوق‌العاده‌ای دارد.</td></tr>
+          <tr><td class="label-cell">مزایای اصلی</td><td>توانایی بالا در فرار از بهینه‌های محلی به کمک جهش‌های تصادفی؛ مقیاس‌پذیری مناسب برای تعداد شهرهای بزرگ‌تر؛ حفظ کروموزوم‌های برتر هر نسل با مکانیزم نخبگان (Elitism) و سازگاری کامل عملگر ERX با ساختار یالی مسئله.</td></tr>
+          <tr><td class="label-cell">معایب و محدودیت‌ها</td><td>پاسخ بهینه مطلق را تضمین نمی‌کند؛ وابستگی شدیدی به اندازه جمعیت اولیه و نرخ جهش (Mutation Rate) دارد؛ در صورت کوچک بودن جمعیت، امکان از‌دست‌رفتن تنوع ژنتیکی و همگرایی زودرس وجود دارد.</td></tr>
+          <tr><td class="label-cell">پیچیدگی زمانی (Time)</td><td>محاسبه شایستگی هر مسیر از مرتبه $\mathcal{O}(N)$ است. برای جمعیتی به اندازه‌ی $P$ در طول $G$ نسل، حداقل هزینه‌ی تئوری برابر $\mathcal{O}(G \times P \times N)$ خواهد بود؛ اما با توجه به پردازش‌های عملگر ERX برای ساخت فرزند، هزینه عملی هر نسل افزایش می‌یابد، بنابراین تخمین محافظه‌کارانه کل سیستم برابر $\mathcal{O}(G \times P \times N^2)$ است.</td></tr>
+          <tr><td class="label-cell">پیچیدگی فضایی (Memory)</td><td>ذخیره‌سازی کروموزوم‌های جمعیت نیازمند حافظه‌ای از مرتبه $\mathcal{O}(P \times N)$ و نگهداری ماتریس فواصل نیازمند حافظه‌ی $\mathcal{O}(N^2)$ است؛ در نتیجه حافظه‌ی غالب مصرفی برنامه برابر $\mathcal{O}(N^2 + P \times N)$ خواهد بود.</td></tr>
+          <tr><td class="label-cell">رفتار با افزایش ابعاد گراف</td><td>از نظر زمان اجرا، بسیار مقیاس‌پذیرتر از روش‌های دقیق (مانند Held-Karp) عمل می‌کند. با این حال، با رشد تعداد شهرها، برای حفظ کیفیت جواب باید اندازه جمعیت یا تعداد نسل‌ها افزایش یابد. در ابعاد بسیار بزرگ، الگوریتم به‌جای بهینه واقعی، یک جواب خوب و قابل‌قبول ارائه می‌دهد.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CHAPTER 6 — PROLOG / HELD-KARP
+========================================================== -->
+<section class="chapter" id="prolog">
+  <div class="chapter-head" style="--chapter-color:var(--c-prolog)">
+    <span class="chapter-index">۶</span>
+    <div>
+      <span class="chapter-kicker">فصل ششم · منطق‌گرا</span>
+      <h2>حلگر دقیق پرولوگ (Held-Karp)</h2>
+    </div>
+  </div>
+
+  <div class="card" id="prolog-why" style="--card-accent:var(--c-prolog)">
+    <h3>چرا زبان پرولوگ (Prolog) برای این بخش انتخاب شد؟</h3>
+    <p class="lead">
+      بخش مهمی از اهداف این پروژه، بررسی عملکرد و رفتار یک زبان برنامه‌نویسی منطق‌گرا (Logic Programming) در
+      مواجهه با مسائل سخت ترکیبیاتی است. برخلاف زبان‌های امری (مانند پایتون یا ++C) که در آن‌ها باید قدم‌به‌قدم
+      نحوه‌ی حل مسئله را کدنویسی کرد، در پرولوگ تنها حقایق و روابط منطقی میان پدیده‌ها توصیف می‌شوند و این موتور
+      استنتاجی خود زبان است که به دنبال جواب می‌گردد.
+    </p>
+
+    <h4>ویژگی حیاتی: دستیابی به جواب ۱۰۰٪ بهینه (Ground Truth)</h4>
+    <p>
+      الگوریتم‌های هوش جمعی و تکاملی (مانند مورچگان و ژنتیک) بر پایه‌ی شانس و احتمال عمل می‌کنند و هیچ‌گاه
+      تضمین نمی‌دهند که جواب نهایی واقعاً بهترین مسیر ممکن باشد. به همین دلیل، نیاز به یک
+      <b>حلگر دقیق (Exact Solver)</b> احساس می‌شد تا نقش «معیار سنجش واقعی» را ایفا کند. حلگر پرولوگ با بررسی
+      دقیق تمام حالت‌ها، جواب ۱۰۰٪ بهینه و قطعی را در اختیار می‌گذارد تا بتوان میزان خطای الگوریتم‌های دیگر را
+      بر مبنای آن سنجید.
+    </p>
+  </div>
+
+  <div class="card" id="prolog-strategy" style="--card-accent:var(--c-prolog)">
+    <h3>اهداف راهبردی دوگانه پرولوگ در پروژه</h3>
+    <p>
+      استفاده از پرولوگ در این پروژه صرفاً به یک حلگر کمکی محدود نمی‌شود، بلکه دو هدف راهبردی مجزا را دنبال
+      می‌کند:
+    </p>
+    <ol class="steps">
+      <li>
+        <b>هدف اول — معیار سنجش علمی (Ground Truth):</b> در مسائل با ابعاد کوچک و متوسط، حلگر پرولوگ به‌عنوان
+        حقیقت مطلق (Ground Truth) عمل می‌کند تا با تکیه بر آن، نرخ خطا و صحت عملکرد الگوریتم‌های ژنتیک و
+        مورچگان به‌طور علمی کالیبره و اثبات شود.
+      </li>
+      <li>
+        <b>هدف دوم — مقدمه‌ای بر معماری‌های سمبولیک-نورونی:</b> این ساختار، مقدمه‌ای برای معماری‌های مدرن هوش
+        مصنوعی سمبولیک-نورونی (Neuro-Symbolic AI) است؛ جایی که محدودیت‌های سخت و پیچیده‌ی منطقِ مسئله
+        (Constraints) به‌راحتی و با چند خط کد در هسته‌ی پرولوگ فرموله می‌شوند و کارِ بهینه‌سازی فضاهای بسیار
+        بزرگ به بازوهای متاهیوریستیک پایتون سپرده می‌شود.
+      </li>
+    </ol>
+    <div class="conclusion">
+      <b>جمع‌بندی:</b> در واقع، پرولوگ تضمین‌کننده‌ی صحت منطقی و پایتون تضمین‌کننده‌ی مقیاس‌پذیری عددی پروژه
+      است؛ ترکیبی که در آن هر زبان دقیقاً همان بخشی از مسئله را بر عهده می‌گیرد که در آن برتری دارد.
+    </div>
+  </div>
+
+  <div class="card" id="prolog-heldkarp" style="--card-accent:var(--c-prolog)">
+    <h3>الگوریتم Held-Karp و سیاست برنامه‌نویسی پویا</h3>
+    <p class="lead">
+      هسته‌ی محاسباتی حلگر پرولوگ بر پایه‌ی الگوریتم <b>هلد-کارپ (Held-Karp)</b> ساخته شده است؛ یک روش
+      برنامه‌نویسی پویا (Dynamic Programming) که مسئله‌ی فروشنده دوره‌گرد را بدون نیاز به بررسی فاکتوریلِ تمام
+      جایگشت‌های ممکن، با پیچیدگی نمایی به‌مراتب کوچک‌تر حل می‌کند.
+    </p>
+
+    <h4>۱. ایده‌ی پایه: زیرمسئله‌ها و چیرگی بر هم‌پوشانی</h4>
+    <p>
+      روش Brute Force باید تمام $(N-1)!$ جایگشت ممکن را بررسی کند که برای $N$ بزرگ‌تر از حدود ۱۲ عملاً
+      غیرقابل‌اجراست. هلد-کارپ با این مشاهده که مسیر بهینه از زیرمسئله‌های کوچک‌تر تشکیل شده — و این زیرمسئله‌ها
+      بارها در شاخه‌های مختلف جست‌وجو تکرار می‌شوند — هزینه را با تعریف یک حالت دوبخشی کاهش می‌دهد:
+      <b>«کدام مجموعه از شهرها تا کنون دیده شده‌اند؟»</b> و <b>«در حال حاضر در کدام شهر ایستاده‌ایم؟»</b>.
+    </p>
+
+    <h4>۲. رابطه بازگشتی برنامه‌نویسی پویا (DP Recurrence)</h4>
+    <p>
+      اگر $S$ زیرمجموعه‌ای از شهرهای بازدیدشده (به‌جز شهر مبدأ) و $j \in S$ آخرین شهر بازدیدشده باشد، تابع
+      $C(S, j)$ هزینه‌ی کمینه‌ی مسیری است که از شهر مبدأ شروع شده، تمام شهرهای $S$ را پیموده و در شهر $j$ به پایان
+      می‌رسد. رابطه بازگشتی حاکم بر این تابع به‌صورت زیر تعریف می‌شود:
+    </p>
+    <div class="callout" style="text-align:center;">
+      <div style="font-size:12.5px; color:var(--ink-muted); margin-bottom:10px;">حالت پایه و رابطه بازگشتی Held-Karp</div>
+      <div class="math-block">$$C(\{1\}, 1) = 0$$</div>
+      <div class="math-block">$$C(S, j) = \min_{i \in S,\ i \neq j} \Big[\, C(S \setminus \{j\},\ i) + d(i, j) \,\Big] \qquad \forall\, j \in S,\ S \neq \{1\}$$</div>
+      <div class="math-block">$$\text{Opt} = \min_{j \neq 1} \Big[\, C(\{1,\dots,N\},\ j) + d(j, 1) \,\Big]$$</div>
+    </div>
+    <p>
+      در این فرمول‌بندی، $d(i,j)$ فاصله‌ی میان دو شهر $i$ و $j$ (برگرفته از ماتریس هاورساین) است. حالت پایه
+      نشان می‌دهد هزینه‌ی ایستادن در شهر مبدأ با مجموعه‌ی تک‌عضوی $\{1\}$ برابر صفر است. رابطه‌ی بازگشتی اصلی نیز
+      می‌گوید: برای رسیدن به شهر $j$ پس از پیمودن مجموعه $S$، باید بهترین حالت ممکنِ ایستادن در یکی از شهرهای
+      $i \in S$ (پیش از ورود به $j$) را در نظر گرفت و فاصله‌ی $i \to j$ را به آن افزود. در نهایت، پاسخ کلی مسئله
+      با بستن دور (بازگشت به شهر مبدأ) از میان تمام شهرهای پایانی ممکن به دست می‌آید.
+    </p>
+    <p>
+      نکته‌ی کلیدی در این رابطه آن است که تعداد حالت‌های متمایز $(S, j)$ برابر $\mathcal{O}(N \times 2^N)$ است —
+      به‌جای $\mathcal{O}(N!)$ در روش Brute Force — و هر حالت تنها <b>یک‌بار</b> محاسبه می‌شود؛ دقیقاً همین
+      ویژگی است که سیاست برنامه‌نویسی پویا را در بخش پرولوگ معنا می‌بخشد و زمینه را برای بهره‌گیری از Tabling در
+      ادامه فراهم می‌کند.
+    </p>
+  </div>
+
+  <div class="card" id="prolog-bitmask-tabling" style="--card-accent:var(--c-prolog)">
+    <h3>مکانیزم تفصیلی حل مسئله و نقش Tabling در پرولوگ</h3>
+    <p class="lead">
+      پرولوگ به‌صورت ذاتی مسائل را با روش «آزمون و خطا و عقب‌گرد» (Backtracking) حل می‌کند: یک مسیر را تا انتها
+      دنبال می‌کند و اگر به بن‌بست خورد یا مسیر تمام شد، به عقب برمی‌گردد و شاخه‌ی دیگری را امتحان می‌کند. در
+      مسئله‌ای به بزرگی TSP، این عقب‌گردها باعث می‌شوند برنامه میلیون‌ها بار محاسبات تکراری انجام دهد. برای
+      جلوگیری از این اتفاق، دو مکانیزم هوشمند در پروژه با یکدیگر ترکیب شده‌اند:
+    </p>
+
+    <h4>۱. مفهوم حالت (State) و مدیریت آن با Bitmask</h4>
+    <p>
+      حلگر پرولوگ پروژه، دقیقاً همان جفتِ $(S, j)$ رابطه‌ی Held-Karp را با دو فاکتور کلیدی نمایش می‌دهد:
+      <b>«کدام شهرها را تا الان دیده‌ایم؟»</b> و <b>«در حال حاضر در کدام شهر ایستاده‌ایم؟»</b>. برای آنکه این
+      اطلاعات فضای حافظه را اشغال نکنند، مجموعه‌ی شهرهای دیده‌شده به یک رشته از صفر و یک (Bitmask) تبدیل می‌شود.
+      برای نمونه، اگر ۵ شهر وجود داشته باشد و شهرهای اول و سوم پیموده شده باشند، وضعیت به‌صورت
+      <span class="mono">10100</span> ذخیره می‌شود. این روش باعث می‌شود مقایسه‌ی حالت‌ها در سریع‌ترین زمان ممکن
+      در حافظه انجام شود.
+    </p>
+
+    <h4>۲. جادوی Tabling (یادداشت‌برداری هوشمند) چیست و چه می‌کند؟</h4>
+    <p>
+      مکانیزم <span class="mono">tabling</span> در واقع همان حافظه‌سپاری (Memoization) در لایه‌ی موتور داخلی
+      زبان پرولوگ است؛ یعنی پیاده‌سازی عملیِ همان «هر حالت تنها یک‌بار محاسبه شود» که در رابطه بازگشتی بالا بیان
+      شد.
+    </p>
+    <p>
+      فرض کنید برنامه می‌خواهد بداند از شهر شماره ۴، چگونه باید به بقیه‌ی شهرهای باقی‌مانده برود تا کوتاه‌ترین
+      مسیر حاصل شود. پرولوگ شروع به محاسبه می‌کند و پس از کلی عقب‌گرد، بهترین جواب را برای این وضعیت پیدا می‌کند.
+      بدون Tabling، اگر برنامه از شاخه‌ی دیگری دوباره به شهر شماره ۴ برسد، تمام آن محاسبات سنگین را از ابتدا
+      تکرار می‌کند.
+    </p>
+    <p>
+      اما با فعال بودن Tabling، موتور SWI-Prolog مانند یک دستیار هوشمند عمل می‌کند: به‌محض اینکه جواب یک وضعیت
+      (مثلاً ایستادن در شهر ۴ با مجموعه‌ی مشخصی از شهرهای باقی‌مانده) پیدا شد، آن را در یک جدول داخلی یادداشت
+      می‌کند. دفعه‌ی بعد که برنامه در جریان جست‌وجوهایش به همان وضعیت برسد، هیچ محاسبه‌ای از نو انجام نمی‌شود؛
+      بلکه فوراً نگاهی به جدول می‌اندازد، جواب را برمی‌دارد و مسیرش را ادامه می‌دهد.
+    </p>
+
+    <h4>۳. فرآیند گام‌به‌گام استخراج جواب بهینه مطلق</h4>
+    <ol class="steps">
+      <li>
+        <b>گام اول (تقسیم مسئله):</b> پرولوگ مسئله‌ی اصلی (یافتن کل مسیر) را به زیرمسئله‌های کوچک‌تر خرد می‌کند:
+        «برای یافتن بهترین مسیر کل، باید دید از شهر فعلی به کدام‌یک از شهرهای ندیده برویم تا مجموع فاصله‌ی فعلی
+        و بهترین مسیرِ باقی‌مانده کمترین مقدار شود؟»
+      </li>
+      <li>
+        <b>گام دوم (حرکت عمقی و یادداشت‌برداری):</b> برنامه به‌صورت عمقی پیش می‌رود تا به انتهای مسیر (زمانی که
+        همه‌ی شهرها دیده شده‌اند) برسد. در مسیر بازگشت، جواب هر مرحله در جدول Tabling ذخیره می‌شود.
+      </li>
+      <li>
+        <b>گام سوم (برداشت پاسخ قطعی):</b> از آنجا که این ساختار تمام ترکیب‌های ممکن را به‌صورت بهینه و بدون
+        تکرار محاسبات موازی پیمایش می‌کند، در نهایت گزاره‌ی اصلی برنامه عددی را به‌عنوان هزینه‌ی کل برمی‌گرداند
+        که کوچک‌ترین طول مسیر ممکن در کل گراف است؛ یعنی تضمین ۱۰۰٪ بهینگی، بدون حتی یک درصد احتمال خطا.
+      </li>
+    </ol>
+
+    <div class="conclusion">
+      <b>نتیجه‌گیری:</b> ترکیب الگوریتم هلد-کارپ با قابلیت Tabling اجازه می‌دهد از ساختار منطق‌گرای پرولوگ بهره
+      گرفته شود، با این اطمینان که به‌لطف بهینه‌سازی حافظه‌ی واسط، برنامه به‌جای رفتارهای تکراری، در سریع‌ترین
+      زمان ممکن به معیار سنجش پروژه دست می‌یابد.
+    </div>
+  </div>
+
+  <div class="card" id="prolog-evaluation" style="--card-accent:var(--c-prolog)">
+    <h3>تحلیل فنی و ارزیابی عملکرد حلگر دقیق پرولوگ (Held-Karp)</h3>
+    <p>
+      به‌منظور ارزیابی نهایی لایه‌ی منطق‌گرای پروژه، ویژگی‌های محاسباتی، نقاط قوت، محدودیت‌های ساختاری و
+      رفتارهای مرتبه اجرایی الگوریتم هلد-کارپ در جدول زیر خلاصه شده است:
+    </p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--c-prolog)">
+        <thead><tr><th style="width:25%">معیار ارزیابی</th><th style="width:75%">تحلیل فنی و محاسباتی</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell">دلیل انتخاب الگوریتم</td><td>دستیابی به پاسخ بهینه‌ی مطلق و ۱۰۰٪ قطعی در ابعاد کوچک؛ ایجاد یک معیار سنجش واقعی (Ground Truth) تا میزان خطای الگوریتم‌های فراابتکاری (ACO و GA) بر اساس آن ارزیابی شود.</td></tr>
+          <tr><td class="label-cell">مزایای اصلی</td><td>تضمین ریاضی برای یافتن کوتاه‌ترین مسیر ممکن؛ استفاده‌ی هوشمندانه از قابلیت <span class="mono">tabling</span> و ساختار <span class="mono">bitmask</span> برای حذف کامل محاسبات تکراری موازی و بازدهی بسیار بالاتر نسبت به روش جست‌وجوی کل فضای حالت (Brute Force).</td></tr>
+          <tr><td class="label-cell">معایب و محدودیت‌ها</td><td>ماهیت پیچیدگی نمایی؛ مصرف بالای حافظه به دلیل ذخیره‌ی جداول بازگشتی؛ عدم کارایی برای تعداد شهرهای بالا (به همین دلیل در تنظیمات پروژه حد مجاز ایمن روی $N \le 15$ قفل شده است).</td></tr>
+          <tr><td class="label-cell">پیچیدگی زمانی (Time)</td><td>پیچیدگی زمانی الگوریتم هلد-کارپ برابر $\mathcal{O}(N^2 \times 2^N)$ است. این مقدار هرچند رشد نمایی دارد، بهبود بسیار بزرگی نسبت به روش Brute Force با پیچیدگی فاکتوریل $\mathcal{O}(N!)$ ایجاد می‌کند.</td></tr>
+          <tr><td class="label-cell">پیچیدگی فضایی (Memory)</td><td>جدول برنامه‌نویسی پویا (Tabling) باید تمام حالت‌های ترکیب زیرمجموعه‌ها و شهر پایانی را مستند کند؛ بنابراین میزان حافظه‌ی مصرفی سیستم از مرتبه $\mathcal{O}(N \times 2^N)$ خواهد بود.</td></tr>
+          <tr><td class="label-cell">رفتار با افزایش ابعاد گراف</td><td>تا زمانی که تعداد شهرها کم باشد، زمان پاسخ‌دهی آنی و بی‌نقص است. اما با عبور از یک آستانه‌ی مشخص، رشد نمایی باعث انفجار محاسباتی و قفل‌شدن حافظه می‌شود؛ در چنین سناریوهایی سیستم باید به‌صورت خودکار وظیفه‌ی حل را به الگوریتم‌های هوش جمعی یا تکاملی بسپارد.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CHAPTER 7 — AI ADVISOR
+========================================================== -->
+<section class="chapter" id="advisor">
+  <div class="chapter-head" style="--chapter-color:var(--c-advisor)">
+    <span class="chapter-index">۷</span>
+    <div>
+      <span class="chapter-kicker">فصل هفتم · فراابتکاری</span>
+      <h2>موتور مشاور هوشمند (Decision Tree)</h2>
+    </div>
+  </div>
+
+  <div class="card" id="advisor-philosophy" style="--card-accent:var(--c-advisor)">
+    <h3>💡 فلسفه و مفهوم ماژول مشاور هوشمند الگوریتم</h3>
+    <p class="lead">
+      در دنیای واقعی و کاربردهای صنعتی هوش مصنوعی، هیچ الگوریتمی وجود ندارد که برای «همه نوع داده‌ای» بهترین
+      باشد. گاهی برای یک چینش خاص از شهرها، الگوریتم ژنتیک سریع‌تر هم‌گرا می‌شود و گاهی کلونی مورچگان عملکرد
+      بهتری از خود نشان می‌دهد. از طرفی، اجرای موازی یا حدسی همه‌ی الگوریتم‌ها هزینه‌ی محاسباتی سنگینی دارد.
+    </p>
+    <p>
+      هدف از طراحی <b>مشاور هوشمند (AI Advisor)</b> در این پروژه، افزودن یک لایه‌ی تصمیم‌گیر فوقانی به نرم‌افزار
+      است. این ماژول پیش از اجرای هرگونه فرآیند سنگین، ابتدا ساختار هندسی و ویژگی‌های فیزیکی شهرها را بررسی
+      می‌کند و بر اساس تجربه‌ای که از پیش کسب کرده، هوشمندانه پیش‌بینی می‌کند که کدام الگوریتم می‌تواند در
+      کمترین زمان، بهترین پاسخ را برای این مسئله‌ی خاص تولید کند.
+    </p>
+  </div>
+
+  <div class="card" id="advisor-model-package" style="--card-accent:var(--c-advisor)">
+    <h3>ساختار فنی و فرآیند تصمیم‌گیری مدل مشاور</h3>
+    <h4>۱. بسته کامل مدل (Model Package) و پایگاه داده فرضی</h4>
+    <p>
+      مکانیزم هوشمند این بخش به‌صورت یک اسکریپت آفلاین به نام <span class="mono">train_model.py</span> طراحی
+      شده است. این اسکریپت با تولید مجموعه‌ای از گراف‌های تصادفیِ مصنوعی با ویژگی‌های هندسی گوناگون، هر سه
+      الگوریتم پروژه را روی آن‌ها می‌آزماید و الگوریتم برنده را از نظر تعادل سرعت و کیفیت پاسخ مشخص می‌کند.
+      خروجی این فرآیند تکمیلی به‌صورت یک فایل پیکل آماده در مسیر
+      <span class="mono">ml_models/tree_classifier.pkl</span> ذخیره می‌شود که شامل اجزای زیر است:
+    </p>
+    <ul>
+      <li><b>مدل درخت تصمیم (DecisionTreeClassifier):</b> هسته‌ی اصلی پیش‌بینی و دسته‌بندی که با Scikit-Learn آموزش دیده است.</li>
+      <li><b>ابزار استانداردسازی (StandardScaler):</b> برای هم‌مقیاس کردن ویژگی‌های عددی ورودی.</li>
+      <li><b>نگاشت برچسب‌ها (Labels Mapping):</b> شناسه‌ی الگوریتم‌های هدف (عدد ۰ برای حلگر دقیق پرولوگ، ۱ برای کلونی مورچگان و ۲ برای الگوریتم ژنتیک).</li>
+    </ul>
+  </div>
+
+  <div class="card" id="advisor-data-generation" style="--card-accent:var(--c-advisor)">
+    <h3>مهندسی داده: موتور تولید شهرهای مصنوعی</h3>
+    <p class="lead">
+      پیش از استخراج ویژگی و آموزش مدل، باید مجموعه‌ای متنوع از نقشه‌های شهری ساخته شود تا درخت تصمیم بتواند
+      الگوهای متفاوت را یاد بگیرد. این وظیفه بر عهده‌ی تابع <span class="mono">_generate_synthetic_cities</span>
+      است که در دو حالت مجزا عمل می‌کند:
+    </p>
+    <ul>
+      <li>
+        <b>توزیع یکنواخت (Uniform Distribution):</b> شهرها کاملاً تصادفی در یک مستطیل جغرافیایی پراکنده
+        می‌شوند؛ حالتی که نقشه‌ی کشورهایی مانند ایران یا آلمان را شبیه‌سازی می‌کند.
+      </li>
+      <li>
+        <b>توزیع خوشه‌ای (Clustered Distribution):</b> ابتدا چند مرکز تصادفی به‌عنوان «خوشه» تعریف می‌شوند و
+        سپس شهرها با توزیع گاوسی (نرمال) دور هر مرکز پراکنده می‌گردند؛ حالتی که نقشه‌های دارای چند شهر بزرگ
+        محوری را بازتولید می‌کند.
+      </li>
+    </ul>
+    <p>
+      پارامترهای ورودی این تابع — تعداد شهرها، مرکز جغرافیایی، شعاع پراکندگی، فعال یا غیرفعال بودن حالت
+      خوشه‌ای، تعداد خوشه‌ها و یک مقدار seed برای تکرارپذیری — امکان تولید طیف وسیعی از سناریوهای آموزشی را
+      فراهم می‌کنند:
+    </p>
+    <div class="codeblock">
+      <div class="cb-title">
+        <span>core.py · _generate_synthetic_cities</span>
+        <span class="cb-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></span>
+      </div>
+      <pre><span class="tok-c"># =============================================================================</span>
+<span class="tok-c"># بخش ۱: موتور تولید داده — ساخت شهرهای مصنوعی</span>
+<span class="tok-c"># =============================================================================</span>
+
+<span class="tok-k">def</span> <span class="tok-f">_generate_synthetic_cities</span>(
+    n_cities:      <span class="tok-t">int</span>,
+    lat_center:    <span class="tok-t">float</span> = <span class="tok-n">35.0</span>,     <span class="tok-c"># مرکز عرض جغرافیایی (پیش‌فرض: ایران)</span>
+    lon_center:    <span class="tok-t">float</span> = <span class="tok-n">50.0</span>,     <span class="tok-c"># مرکز طول جغرافیایی</span>
+    spread_km:     <span class="tok-t">float</span> = <span class="tok-n">500.0</span>,    <span class="tok-c"># شعاع پراکندگی شهرها به کیلومتر</span>
+    cluster_mode:  <span class="tok-t">bool</span>  = <span class="tok-k">False</span>,    <span class="tok-c"># آیا شهرها به‌صورت خوشه‌ای باشند؟</span>
+    n_clusters:    <span class="tok-t">int</span>   = <span class="tok-n">3</span>,        <span class="tok-c"># تعداد خوشه‌ها (اگر cluster_mode=True)</span>
+    seed:          Optional[<span class="tok-t">int</span>] = <span class="tok-k">None</span>  <span class="tok-c"># seed برای تکرارپذیری</span>
+) -> <span class="tok-t">list</span>[City]:
+    <span class="tok-s">"""
+    تولید لیستی از شهرهای مصنوعی با مختصات جغرافیایی تصادفی.
+    """</span>
+    <span class="tok-c"># تنظیم seed برای تکرارپذیری نتایج — هر بار با همین seed، همان نقشه</span>
+    rng = random.Random(seed)
+
+    <span class="tok-c"># تبدیل شعاع کیلومتری به درجه‌ی جغرافیایی (تقریب ساده)</span>
+    <span class="tok-c"># هر درجه‌ی عرض جغرافیایی ≈ ۱۱۱ کیلومتر</span>
+    lat_spread_deg = spread_km / <span class="tok-n">111.0</span>
+    lon_spread_deg = spread_km / (<span class="tok-n">111.0</span> * <span class="tok-f">max</span>(<span class="tok-n">0.1</span>, math.cos(math.radians(lat_center))))
+
+    cities = []
+
+    <span class="tok-k">if not</span> cluster_mode:
+        <span class="tok-c"># ─── حالت ۱: توزیع یکنواخت (Uniform Distribution) ───</span>
+        <span class="tok-k">for</span> i <span class="tok-k">in</span> <span class="tok-f">range</span>(n_cities):
+            lat = rng.uniform(lat_center - lat_spread_deg, lat_center + lat_spread_deg)
+            lon = rng.uniform(lon_center - lon_spread_deg, lon_center + lon_spread_deg)
+            cities.append(City(index=i, name=<span class="tok-s">f"City_{i}"</span>, lat=lat, lon=lon))
+
+    <span class="tok-k">else</span>:
+        <span class="tok-c"># ─── حالت ۲: توزیع خوشه‌ای (Clustered Distribution) ───</span>
+        cluster_spread = spread_km / (n_clusters * <span class="tok-n">1.5</span>)
+        cluster_lat_deg = cluster_spread / <span class="tok-n">111.0</span>
+        cluster_lon_deg = cluster_spread / (<span class="tok-n">111.0</span> * <span class="tok-f">max</span>(<span class="tok-n">0.1</span>, math.cos(math.radians(lat_center))))
+
+        <span class="tok-c"># تعیین مرکز هر خوشه به‌صورت تصادفی</span>
+        cluster_centers = [
+            (rng.uniform(lat_center - lat_spread_deg * <span class="tok-n">0.7</span>, lat_center + lat_spread_deg * <span class="tok-n">0.7</span>),
+             rng.uniform(lon_center - lon_spread_deg * <span class="tok-n">0.7</span>, lon_center + lon_spread_deg * <span class="tok-n">0.7</span>))
+            <span class="tok-k">for</span> _ <span class="tok-k">in</span> <span class="tok-f">range</span>(n_clusters)
+        ]
+
+        <span class="tok-k">for</span> i <span class="tok-k">in</span> <span class="tok-f">range</span>(n_cities):
+            center_lat, center_lon = rng.choice(cluster_centers)
+            <span class="tok-c"># پراکنده کردن شهر دور مرکز با توزیع گاوسی (sigma = یک‌سوم فاصله‌ی پراکندگی)</span>
+            lat = rng.gauss(center_lat, cluster_lat_deg / <span class="tok-n">3.0</span>)
+            lon = rng.gauss(center_lon, cluster_lon_deg / <span class="tok-n">3.0</span>)
+            lat = <span class="tok-f">max</span>(-<span class="tok-n">89.9</span>, <span class="tok-f">min</span>(<span class="tok-n">89.9</span>, lat))
+            lon = <span class="tok-f">max</span>(-<span class="tok-n">179.9</span>, <span class="tok-f">min</span>(<span class="tok-n">179.9</span>, lon))
+            cities.append(City(index=i, name=<span class="tok-s">f"City_{i}"</span>, lat=lat, lon=lon))
+
+    <span class="tok-k">return</span> cities</pre>
+    </div>
+    <p>
+      با تغییر این پارامترها — به‌خصوص فعال‌سازی <span class="mono">cluster_mode</span> و تعداد خوشه‌ها — موتور
+      تولید داده می‌تواند طیف وسیعی از توپولوژی‌های شهری را شبیه‌سازی کند؛ از پراکندگی کاملاً یکنواخت تا چیدمان
+      چندقطبی با چند هسته‌ی شهری اصلی. همین تنوع، اساس آموزش درخت تصمیم برای تشخیص الگوهای ساختاری متفاوت
+      گراف‌هاست.
+    </p>
+  </div>
+
+  <div class="card" id="advisor-features" style="--card-accent:var(--c-advisor)">
+    <h3>ویژگی‌های ورودی (Features) و برچسب خروجی (Label)</h3>
+    <p class="lead">
+      مدل درخت تصمیم بر اساس ۹ ویژگی توپولوژیک و آماری استخراج‌شده از ماتریس فواصل تصمیم‌گیری می‌کند. این
+      ویژگی‌ها هم ابعاد مسئله را پوشش می‌دهند و هم ساختار هندسی و توزیع فضاییِ شهرها را توصیف می‌کنند:
+    </p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--c-advisor)">
+        <thead><tr><th style="width:8%">#</th><th style="width:27%">ویژگی</th><th style="width:65%">توضیح</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell mono-cell">۱</td><td class="label-cell mono-cell">n_cities</td><td>تعداد شهرها — اصلی‌ترین عامل تعیین‌کننده‌ی پیچیدگی مسئله.</td></tr>
+          <tr><td class="label-cell mono-cell">۲</td><td class="label-cell mono-cell">coord_variance</td><td>واریانس مختصات شهرها — معیار پراکندگی جغرافیایی کلی نقشه.</td></tr>
+          <tr><td class="label-cell mono-cell">۳</td><td class="label-cell mono-cell">dist_mean</td><td>میانگین فواصل بین شهرها (km) — اندازه‌ی کلی نقشه.</td></tr>
+          <tr><td class="label-cell mono-cell">۴</td><td class="label-cell mono-cell">dist_std</td><td>انحراف معیار فواصل — یکنواختی توزیع شهرها.</td></tr>
+          <tr><td class="label-cell mono-cell">۵</td><td class="label-cell mono-cell">dist_cv</td><td>ضریب تغییرات (std/mean) — نسبی‌سازی پراکندگی فاصله.</td></tr>
+          <tr><td class="label-cell mono-cell">۶</td><td class="label-cell mono-cell">density_proxy</td><td>تراکم تخمینی: $n / \sqrt{\text{area}_{km^2}}$ — چگالی شهری.</td></tr>
+          <tr><td class="label-cell mono-cell">۷</td><td class="label-cell mono-cell">nn_ratio</td><td>نسبت میانگین نزدیک‌ترین همسایه به میانگین کل فواصل.</td></tr>
+          <tr><td class="label-cell mono-cell">۸</td><td class="label-cell mono-cell">dist_skewness</td><td>کجی توزیع فواصل — تشخیص خوشه‌های شهری (Cluster).</td></tr>
+          <tr><td class="label-cell mono-cell">۹</td><td class="label-cell mono-cell">max_min_ratio</td><td>نسبت بیشترین به کمترین فاصله — شاخص انتشار جغرافیایی.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4 style="margin-top:24px;">برچسب خروجی (Label)</h4>
+    <p>بر اساس این ۹ ویژگی، مدل گراف ورودی را در یکی از سه دسته‌ی زیر طبقه‌بندی می‌کند:</p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--c-advisor)">
+        <thead><tr><th style="width:12%">برچسب</th><th style="width:23%">الگوریتم</th><th style="width:65%">شرط معمول انتخاب</th></tr></thead>
+        <tbody>
+          <tr><td class="label-cell mono-cell" style="color:var(--c-prolog)">0</td><td class="label-cell">Prolog (Held-Karp, Exact)</td><td>برای $N$‌های کوچک که حلگر دقیق پرولوگ در زمان معقول اجرا می‌شود.</td></tr>
+          <tr><td class="label-cell mono-cell" style="color:var(--c-aco)">1</td><td class="label-cell">ACO (Ant Colony)</td><td>وقتی مسئله ابعاد متوسط دارد یا از ساختار هندسی خاصی برخوردار است.</td></tr>
+          <tr><td class="label-cell mono-cell" style="color:var(--c-ga)">2</td><td class="label-cell">Genetic Algorithm</td><td>وقتی مسئله بزرگ است یا توزیع فضایی شهرها غیریکنواخت است.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      مقایسه با نسخه‌ی اولیه‌ی مدل: نسخه‌ی نخست مشاور هوشمند تنها بر مبنای دو ویژگی — تعداد شهرها و واریانس
+      فواصل — تصمیم می‌گرفت. مجموعه‌ی ۹‌تایی فعلی با افزودن شاخص‌های چگالی، کجی توزیع، نسبت همسایگی و نسبت
+      بیشینه‌به‌کمینه، دید مدل را از یک ارزیابی صرفاً «اندازه‌محور» به یک تحلیل ساختاری-هندسی کامل‌تر گسترش
+      می‌دهد.
+    </div>
+  </div>
+
+  <div class="card" id="advisor-runtime-flow" style="--card-accent:var(--c-advisor)">
+    <h3>۳. روال جریان داده و نحوه فراخوانی در رابط کاربری (PyQt6 UI)</h3>
+    <ol class="steps">
+      <li>
+        <b>گام اول (دریافت و پردازش اولیه داده):</b> پس از اینکه کاربر نام کشور و تعداد شهرهای مدنظرش را در تب
+        اول مشخص کرد، سیستم مختصات جغرافیایی را (به‌صورت آنلاین از API یا آفلاین از فایل‌های کَش JSON) بارگذاری
+        کرده و ماتریس فواصل را تشکیل می‌دهد.
+      </li>
+      <li>
+        <b>گام دوم (تحلیل آنی هندسه گراف):</b> با ورود کاربر به تب دوم (مشاور هوشمند) و فشردن دکمه‌ی «تحلیل
+        گراف»، هر ۹ ویژگی ساختاری از ماتریس فواصل استخراج شده، از ابزار Scaler عبور می‌کنند و به مدل
+        <span class="mono">tree_classifier.pkl</span> تزریق می‌شوند.
+      </li>
+      <li>
+        <b>گام سوم (نمایش پیشنهاد هوشمند):</b> مدل درخت تصمیم با تحلیل ویژگی‌ها، خروجی دسته‌بندی را مشخص می‌کند
+        و سیستم متنی متناسب با ابعاد مسئله را در رابط کاربری نشان می‌دهد؛ برای مثال:
+        «<i>با توجه به ابعاد و چیدمان این نقشه، پیشنهاد می‌کنم از پرولوگ استفاده کنی چون جواب قطعی را می‌دهد</i>»
+        یا «<i>پیشنهاد من کلونی مورچگان است چون در این ابعاد سریع‌تر همگرا می‌شود</i>».
+      </li>
+    </ol>
+    <div class="conclusion">
+      <b>نتیجه‌گیری:</b> این لایه‌ی هوشمند باعث می‌شود نرم‌افزار پیش از درگیر کردن ترد اصلی یا فرستادن محاسبات
+      سنگین به <span class="mono">QThread</span> در پس‌زمینه، بهترین استراتژی حل مسئله را به‌صورت بهینه انتخاب
+      و پیشنهاد کند.
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CHAPTER 8 — SYNTHESIS / BENCHMARK COMPARISON
+========================================================== -->
+<section class="chapter" id="synthesis">
+  <div class="chapter-head" style="--chapter-color:var(--navy)">
+    <span class="chapter-index">۸</span>
+    <div>
+      <span class="chapter-kicker">فصل هشتم</span>
+      <h2>جمع‌بندی مقایسه‌ای و رفتار مقیاس‌پذیری</h2>
+    </div>
+  </div>
+
+  <div class="card" id="comparison-table" style="--card-accent:var(--navy)">
+    <h3>📊 مقایسه نهایی و جمع‌بندی رویکردهای حل مسئله (Benchmark Synthesis)</h3>
+    <p class="lead">
+      به‌عنوان نتیجه‌گیری بخش‌های پیاده‌سازی و ارزیابی فنی، جدول زیر دیدی کلان و مقایسه‌ای از رفتار محاسباتی،
+      نوع پاسخ و قلمرو عملیاتی هر سه حلگر پروژه (منطق‌گرا، هوش جمعی و تکاملی) را در کنار یکدیگر ارائه می‌دهد:
+    </p>
+    <div class="table-wrap">
+      <table class="data-table" style="--table-color:var(--navy)">
+        <thead>
+          <tr>
+            <th style="width:22%">الگوریتم و رویکرد</th>
+            <th style="width:20%">ماهیت و نوع جواب</th>
+            <th style="width:23%">پیچیدگی زمانی (Time)</th>
+            <th style="width:35%">بهترین قلمرو کاربردی در پروژه</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-cell" style="color:var(--c-prolog)">Prolog / Held-Karp</td>
+            <td>دقیق، قطعی و ۱۰۰٪ بهینه</td>
+            <td class="mono-cell">$\mathcal{O}(N^2 \times 2^N)$</td>
+            <td>تعداد شهرهای محدود و کوچک (زیر ۱۲ تا ۱۵ شهر)؛ ایجاد معیار سنجش واقعی (Ground Truth) برای کالیبره کردن سایر ماژول‌ها.</td>
+          </tr>
+          <tr>
+            <td class="label-cell" style="color:var(--c-aco)">کلونی مورچگان (ACO)</td>
+            <td>تقریبی / فراابتکاری (هوش جمعی)</td>
+            <td class="mono-cell">$\mathcal{O}(I \times M \times N^2)$</td>
+            <td>ابعاد و تعداد شهرهای متوسط؛ بسیار مناسب برای تحلیل بصری، پویایی و مشاهده‌ی زنده‌ی روند تغییرات و هم‌گرایی کلونی.</td>
+          </tr>
+          <tr>
+            <td class="label-cell" style="color:var(--c-ga)">ژنتیک تکاملی (GA + ERX)</td>
+            <td>تقریبی / فراابتکاری (تکاملی)</td>
+            <td class="mono-cell">$\mathcal{O}(G \times P \times N^2)$</td>
+            <td>تعداد شهرهای بزرگ و گراف‌های گسترده؛ کارایی بالا در مدیریت فضاهای جایگشتی عظیم به کمک ساختار عملگر بازترکیب یال.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conclusion">
+      <b>نتیجه‌گیری راهبردی:</b> همان‌طور که مشاور هوشمند پروژه (Decision Tree) در فصل‌های پیشین تحلیل کرد،
+      انتخاب الگوریتم بهینه کاملاً به ساختار ورودی وابسته است. پرولوگ با وجود سرعت فوق‌العاده در ابعاد پایین، به
+      دلیل ماهیت نمایی خود در ابعاد بالا کارایی‌اش را از دست می‌دهد؛ جایی که الگوریتم‌های هوش جمعی و تکاملی با
+      تکیه بر توازن میان اکتشاف و بهره‌برداری، زمان اجرای منطقی را برای ابعاد بزرگ مسئله تضمین می‌کنند.
+    </div>
+  </div>
+
+  <div class="card" id="complexity-chart" style="--card-accent:var(--navy)">
+    <h3>نمودار مقایسه‌ای رشد پیچیدگی الگوریتم‌ها</h3>
+    <p>
+      نمودار زیر روند رشد نظریِ هزینه‌ی محاسباتی هر سه رویکرد را در مقیاس لگاریتمی، بر حسب افزایش تعداد شهرها
+      ($N$)، به نمایش می‌گذارد. فاصله‌ی فزاینده‌ی منحنی Held-Karp از دو منحنی دیگر، به‌خوبی ماهیت نمایی این
+      الگوریتم را در برابر رفتار تقریباً درجه‌دوی ACO و GA نشان می‌دهد:
+    </p>
+    <div class="figure">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA1cAAAHWCAYAAACbsXOkAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjguMiwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy8g+/7EAAAACXBIWXMAAA9hAAAPYQGoP6dpAACs/0lEQVR4nOzdd1hTZ/8G8DuDsKeAgOJAhlL33hN3VZbiRmu32mFra9u3WrvHW7U/tfVtq9WqdbC07tVarbNK3YKguAUHyF5Jnt8flpSYoAlCwrg/1+UFOc83yTfkKc3NOec5EiGEABERERERET0RqbkbICIiIiIiqgkYroiIiIiIiCoAwxUREREREVEFYLgiIiIiIiKqAAxXREREREREFYDhioiIiIiIqAIwXBEREREREVUAhisiIiIiIqIKwHBFRERERERUARiuiKjKkkgk+OCDD8z2/I0aNcKkSZMMrn366acrt6EabPny5ZBIJLh8+XKlPYcx72dtd/nyZUgkEvz3v/81dyvVGuccUe3DcEVEZvHtt99CIpGgU6dO5m7FYOfOncMHH3xQqQHgScXFxWHw4MFwdXWFQqGAl5cXRo0ahd9++83crVU5lf1+7t+/H6NGjUK9evWgUCjg6OiITp064cMPP0RaWlqlPKextm7dWql/wEhLS8Obb76Jpk2bwsbGBra2tmjXrh0+/vhj3L9/v9Kel4jIXOTmboCIaqfVq1ejUaNGOHr0KJKTk+Hr62vulnQkJiZCKv33b1Dnzp3D3Llz0bt3bzRq1Mh8jekhhMAzzzyD5cuXo02bNpgxYwY8PDxw69YtxMXFoV+/fjhw4AC6du1q7lbNxpTv5+zZs/HRRx/Bx8cHkyZNgo+PDwoKCnD8+HF8/fXXWLFiBS5evFihz1keW7duxeLFiyslYP31118YMmQIcnJyMH78eLRr1w4AcOzYMXz++efYt28fdu7cWeHPW5U8POeIqOZjuCIik0tJScHBgwcRGxuLF154AatXr8acOXPM3RaAByGloKAA1tbWsLS0NHc7Bvv666+xfPlyvPbaa5g3bx4kEolm7L333sPKlSshl9fuX/mmej/XrVuHjz76CKNGjcLKlSuhUCi0xufPn4/58+c/8jFKz8Pq6P79+wgJCYFMJsPff/+Npk2bao1/8skn+OGHH8zUXeWqrr9DiKhi8M8pRGRyq1evhrOzM4YOHYrw8HCsXr3a4Pvu3bsX7du3h5WVFZo0aYL//e9/+OCDD7TCBAAolUp89NFHaNKkCSwtLdGoUSO8++67KCws1KorOVdqx44daN++PaytrfG///1PM1ZyvsTy5csxcuRIAECfPn0gkUggkUiwd+9ercf7888/0bFjR1hZWcHHxwc///yz1njJuUV//vknXnnlFbi5ucHJyQkvvPACioqKcP/+fUycOBHOzs5wdnbGW2+9BSHEI38m+fn5+Oyzz9C0aVP897//1flZAMCECRPQsWNHze1Lly5h5MiRcHFxgY2NDTp37owtW7bo/KwlEgnWr1+PuXPnol69erC3t0d4eDgyMzNRWFiI1157De7u7rCzs8PkyZN1fr4SiQTTpk3D6tWrERAQACsrK7Rr1w779u175GsqsW3bNvTo0QO2trawt7fH0KFDcfbsWc34b7/9BqlUitmzZ2vd75dffoFEIsF3332n2Wbo+xkZGQlXV1cUFxfr9DNgwAAEBAQ8sufZs2fD1dUVS5cu1QlWAODo6Kizp+hR8/Bx75UQAq6urpgxY4Zmm1qthpOTE2Qymdbhd1988QXkcjlycnIwadIkLF68GAA0r1/f3Pn+++81/x116NABf/311yNfPwD873//w40bNzBv3jydYAUAdevWxX/+8x+tbd9++y2eeuopWFpawsvLC1OnTtU5dLB3795o3rw5Tp06hV69esHGxga+vr6Ijo4GAPzxxx/o1KkTrK2tERAQgN27d2vdv+R3RUJCAkaNGgUHBwfUqVMHr776KgoKCrRqf/rpJ/Tt2xfu7u6wtLREYGCg1nwqYejvEAAoLi7G3Llz4efnBysrK9SpUwfdu3fHrl27tB7zt99+08x7JycnjBgxAufPn9f7WpKTkzFp0iQ4OTnB0dERkydPRl5enp53hYhMQhARmVjTpk3FlClThBBC7Nu3TwAQR48e1akDIObMmaO5HR8fLywtLUWjRo3E559/Lj755BPh5eUlWrVqJR7+dRYZGSkAiPDwcLF48WIxceJEAUAEBwdr1TVs2FD4+voKZ2dnMWvWLLFkyRLx+++/a8YiIyOFEEJcvHhRvPLKKwKAePfdd8XKlSvFypUrRWpqqqY2ICBA1K1bV7z77rti0aJFom3btkIikYgzZ85onu+nn34SAETr1q3FoEGDxOLFi8WECRME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VK0MGjQIa9asQWpqKiwtLdGlSxd8+umnei9US1ReY8aMgZ2dHaZMmYKXX37Z3O0QEVE1wXOuiIiIiIiIKgDPuSIiIiIiIqoADFdEREREREQVgOdclUGtVuPmzZuwt7fnicxERERERLWYEALZ2dnw8vLSuoD7wxiuynDz5k14e3ubuw0iIiIiIqoirl27hvr165c5znBVBnt7ewAPfoAODg5m7UWtViMjIwPOzs6PTMpEJThnyFicM2QszhkyFucMGasqzZmsrCx4e3trMkJZGK7KUHIooIODQ5UIV0qlEg4ODmafWFQ9cM6QsThnyFicM2QszhkyVlWcM487XahqdElERERERFTNMVwRERERERFVAIYrIiIiIiKiCsBzrp6ASqVCcXFxpT+PWq1GcXExCgoKqszxplS1PcmckclkkMvlvAQBERERkZEYrsopJycH169fhxCi0p9LCKFZLYUfeMkQTzpnbGxs4OnpCYVCUQndEREREdVMDFfloFKpcP36ddjY2MDNza3SA48QAkqlknsTyGDlnTNCCBQVFeHOnTtISUmBn58f95YSERERGYjhqhyKi4shhICbmxusra0r/fkYrshYTzJnrK2tYWFhgStXrqCoqAhWVlaV1CURERFRzcI/ST8BBh2qqbi3ioiIiMh4NeITVEhICJydnREeHq7Zdu3aNfTu3RuBgYFo2bIloqKizNghERERERHVdDUiXL366qv4+eeftbbJ5XIsWLAA586dw86dO/Haa68hNzfXTB0SEREREVFNVyPCVe/evWFvb6+1zdPTE61btwYAeHh4wNXVFenp6WbojoiIiIiIagOzh6t9+/Zh2LBh8PLygkQiwYYNG3RqFi9ejEaNGsHKygqdOnXC0aNHjXqO48ePQ6VSwdvbu4K6puqCh4cSERERVV+muOxRRTJ7uMrNzUWrVq2wePFivePr1q3DjBkzMGfOHMTHx6NVq1YYOHAgbt++bdDjp6enY+LEifj+++8rsm2qJnh4KBEREVH1IoTAX6l/4b0D72HO8TnmbscoZl+KffDgwRg8eHCZ4/PmzcNzzz2HyZMnAwCWLFmCLVu2YNmyZZg1a9YjH7uwsBDBwcGYNWsWunbt+tjawsJCze2srCwAgFqthlqt1qpVq9UQQmj+mVJ1S+/m5uHhAQ8PDwghULduXbi6uuLevXuwsbExd2sm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U1lZifr6emVfrVajtLR0wDC0BQsWKNsajQaXXHKJUo//+7//wxtvvAGz2awsqWCTHggG651J8fl8aGtrw+WXX55Rfvnllw/rN0uSdNrnDldzczNCoRCuueaajN/7k5/8RPmtX/3qV/HSSy9h9uzZ+PrXv4733ntvyGuGw2EYDIZBjzc0NOCKK67AunXrBj3HaDRCFEVEo9Ez+2FERKOYJt8VICKiwnPllVeioaEBa9euxYoVKzKOqVSqAaEiHo8PuIZWq83YFwQha9lwekACgQCWLl2KzZs3DzhWVVWlbGcboncuTJ48GYIg4NChQzm/diAQAAC8+uqrGDNmTMax1MQYS5YswbFjx/DHP/4Rf/7zn7Fo0SI0NjYOOjFFWVnZKScr2bRpExYsWIA1a9ZkPe5yuWAymWA0Gof7k4iIRj32XBERUVabNm3C73//e+zevTujvLy8HE6nMyNg5fLdVOmTQPT29mLPnj2YOnUqAOBzn/sc9u/fj/Hjx2PSpEkZy3ACldVqRXV1Nd59992M8nfffRfTpk077evY7XY0NDRg27ZtCAaDA457PJ6sn9PpdACARCIx6LWnTZsGvV6P1tbWAb+1pqZGOa+8vBzLly/Hz372M2zZsgXf//73B73mnDlzcODAgSF/07x583DjjTfioYceynp83759mDNnzpDXICK6UDFcERFRVvX19bj11luxdevWjPKFCxeiq6sLjz/+OFpaWrBt27acTs29bds2bN++HYcOHUJjYyPcbjdWrlwJAGhsbITL5cItt9yCv/zlL2hpacGf/vQn3H777UMGlWzWrFmDzZs34+WXX0ZTUxMeeugh7N27F/fcc8+w65tIJDBv3jz8+te/xuHDh3Hw4EFs3bo1Y4hjuoqKChiNRmVCDq/XO+Aci8WCBx54APfddx9eeOEFtLS04K9//SuefvppvPDCCwCAhx9+GL/97W/R3NyM/fv34w9/+IMSRLNpaGjA/v37T9l79e1vfxuvv/46mpqaBhx7++23ce211w75eSKiCxXDFRERDWrDhg0Dhu1NnToV//mf/4lt27Zh1qxZ+PDDD7POpHemNm3ahE2bNmHWrFl455138Lvf/U6ZAS/V25RIJHDttdeivr4e9957L4qLizOe7zod//7v/47Vq1fj/vvvR319PXbs2IHf/e53mDx58rCuM3HiRPz1r3/FVVddhfvvvx8zZszANddcg507d+LZZ5/N+hmNRoOtW7fie9/7Hqqrq3HDDTdkPe+b3/wm1q1bh40bN2Lq1Km47rrr8OqrrypTuet0OqxduxYzZ87ElVdeCbVaPeQ06fX19fjc5z6HX/ziF0P+posvvhgrV65EJBLJKD958iTee+893H777UN+nojoQiVI5/JpXCIiIioor776KtasWYN9+/YNO5A++OCDcLvdQw49JCK6kHFCCyIiogvIF77wBRw+fBgnT57MeHbrdFRUVGD16tXnqGZERCMfe66IiIiIiIhygM9cERERERER5QDDFRERERERUQ4wXBEREREREeUAwxUREREREVEOMFwRERERERHlAMMVERERERFRDjBcERERERER5QDDFRERERERUQ4wXBEREREREeXA/wNR9qM2mnMO3AAAAABJRU5ErkJggg==" alt="نمودار مقایسه رشد پیچیدگی الگوریتم‌ها">
+      <div class="figure-caption">نمودار ۱: مقایسه‌ی رشد پیچیدگی زمانی ACO، GA/ERX و Held-Karp بر حسب تعداد شهرها (مقیاس لگاریتمی)</div>
+    </div>
+  </div>
+
+  <div class="card" id="scaling-behavior" style="--card-accent:var(--navy)">
+    <h3>📈 تحلیل عملکرد سیستم با افزایش ابعاد مسئله (Scaling Behavior)</h3>
+    <p class="lead">
+      با افزایش تعداد شهرها ($N$)، فضای جست‌وجوی مسئله فروشنده دوره‌گرد دچار رشد فاکتوریل می‌شود. اگر بخواهیم
+      مسیرها را به‌صورت آزمون و خطای ساده (Brute Force) بررسی کنیم، تعداد حالت‌های ممکن برابر با $(N-1)!$ خواهد
+      بود که حتی برای مقادیر متوسط $N$ نیز عملاً غیرقابل‌محاسبه است. معماری این پروژه برای مدیریت این انفجار
+      ترکیبیاتی، یک استراتژی سه‌لایه را بر اساس ابعاد گراف اتخاذ می‌کند:
+    </p>
+    <ul>
+      <li>
+        <b>ابعاد کوچک ($N$ محدود):</b> حلگر دقیق Prolog / Held-Karp وارد عمل می‌شود تا بدون اتکا به احتمالات،
+        پاسخ قطعی و ۱۰۰٪ بهینه را به‌عنوان مبنای مقایسه استخراج کند.
+      </li>
+      <li>
+        <b>ابعاد متوسط:</b> الگوریتم کلونی مورچگان (ACO) گزینه‌ی بهینه‌ای است؛ چرا که با تنظیم هوشمندانه‌ی
+        تعداد مورچه‌ها و دفعات تکرار، تعادل فوق‌العاده‌ای میان سرعت و دقت برقرار می‌کند.
+      </li>
+      <li>
+        <b>ابعاد بزرگ و گسترده:</b> الگوریتم ژنتیک (GA + ERX) کارایی بالاتری نشان می‌دهد؛ زیرا با تکیه بر عملگر
+        بازترکیب یال، در فضاهای جایگشتی بسیار عظیم به‌صورت تکاملی به سمت جواب‌های باکیفیت هم‌گرا می‌شود.
+      </li>
+    </ul>
+    <h4>⚠️ چالش کیفیت جواب در ابعاد بالا</h4>
+    <p>
+      یک نکته‌ی کلیدی در تحلیل این رفتار آن است که افزایش تعداد شهرها صرفاً زمان اجرای برنامه را طولانی نمی‌کند،
+      بلکه <b>کیفیت پاسخ‌های تقریبی</b> را نیز مستقیماً تحت تأثیر قرار می‌دهد. اگر ابعاد مسئله بزرگ شود اما
+      پارامترهای کنترل‌کننده مانند تعداد تکرارها (Iterations)، اندازه‌ی جمعیت ژنتیک یا تعداد مورچه‌ها ثابت
+      بمانند، الگوریتم‌های فراابتکاری فضای کافی برای اکتشاف کامل گراف را نخواهند داشت و در نتیجه، کیفیت پاسخ
+      افت می‌کند.
+    </p>
+  </div>
+</section>
+
+
+<!-- =========================================================
+     CHAPTER 9 — APPLICATION WALKTHROUGH (GUI)
+========================================================== -->
+<section class="chapter" id="walkthrough">
+  <div class="chapter-head" style="--chapter-color:var(--navy)">
+    <span class="chapter-index">۹</span>
+    <div>
+      <span class="chapter-kicker">فصل نهم</span>
+      <h2>نمونه خروجی و رابط کاربری برنامه</h2>
+    </div>
+  </div>
+
+  <div class="card" id="ui-data-config" style="--card-accent:var(--navy)">
+    <h3>🖥️ بخش اول: پیکربندی و بارگذاری لایه داده (Data Configuration UI)</h3>
+
+    <div class="figure">
+      <img src="pic1.png" alt="Data Configuration Tab" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="img-fallback"><span class="fb-icon">🖼️</span><b>تصویر ۱ در دسترس نیست</b>تب مدیریت داده‌ها و ترسیم موقعیت جغرافیایی اولیه شهرها در PyQt6</div>
+      <div class="figure-caption">تصویر ۱: تب مدیریت داده‌ها و ترسیم موقعیت جغرافیایی اولیه شهرها در PyQt6</div>
+    </div>
+
+    <h4>مکانیزم‌های فعال در این پنجره:</h4>
+    <ul class="mech-list">
+      <li><b>پنل سمت چپ (Online/Offline Loading):</b> کاربر نام کشور (در اینجا Germany) و تعداد شهرهای مدنظرش ($N=15$) را وارد می‌کند. سیستم ابتدا فولدر کَش محلی (<span class="mono">data_cache/</span>) را بررسی کرده و در صورت عدم وجود داده، مختصات را از طریق API آنلاین دریافت و بلافاصله کَش می‌کند.</li>
+      <li><b>گراف مرکزی (Matplotlib Integration):</b> به‌محض لود شدن داده‌ها، مختصات جغرافیایی (طول و عرض جغرافیایی) شهرها استخراج شده و به‌صورت نقاط پراکنده بر روی یک نمودار Matplotlib تعبیه‌شده در پنل اصلی نمایش داده می‌شوند تا نمای فیزیکی اولیه‌ی مسئله مشخص شود.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="ui-advisor-engine" style="--card-accent:var(--c-advisor)">
+    <h3>🧠 بخش دوم: لایه تحلیل هوشمند و موتور توصیه‌گر (AI Advisor Engine)</h3>
+    <p class="lead">
+      این تب اصلی‌ترین بخش تصمیم‌گیری سیستم است؛ با فعال‌سازی دکمه‌ی «تحلیل گراف»، ویژگی‌های ساختاری مسئله به
+      لایه‌ی یادگیری ماشین فرستاده می‌شوند تا بهینه‌ترین الگوریتم پیش‌بینی شود.
+    </p>
+
+    <div class="figure">
+      <img src="pic2.png" alt="AI Advisor Engine" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="img-fallback"><span class="fb-icon">🖼️</span><b>تصویر ۲ در دسترس نیست</b>داشبورد تحلیل هوشمند متادیتای گراف و تعیین استراتژی حل</div>
+      <div class="figure-caption">تصویر ۲: داشبورد تحلیل هوشمند متادیتای گراف و تعیین استراتژی حل</div>
+    </div>
+
+    <h4>تحلیل فنی و اجزای پنجره مشاور هوشمند:</h4>
+    <ul class="mech-list">
+      <li><b>پنجره پیشنهاد درخت تصمیم (Decision Tree Suggestion):</b> این پنل فایل مدل آماده (<span class="mono">tree_classifier.pkl</span>) را فراخوانی می‌کند. مدل بر اساس ویژگی‌های گراف ورودی، الگوریتم <b>Genetic</b> را به‌عنوان گزینه‌ی برنده پیشنهاد داده است.</li>
+      <li><b>مفهوم درصد اطمینان (Confidence = 69%):</b> این شاخص نشان می‌دهد درخت تصمیم پس از ارزیابی ساختار فعلی گراف در مقایسه با مجموعه‌ی گراف‌های متفاوتی که در زمان آموزش آفلاین دیده، با احتمال ۶۹٪ حدس می‌زند الگوریتم ژنتیک توازن بهتری میان سرعت محاسبات و کیفیت پاسخ (طول مسیر) نسبت به دو روش دیگر برقرار می‌کند.</li>
+      <li><b>نمودار ویژگی‌های گراف:</b> در بخش <span class="mono">Graph Features</span>، مقادیر فعلی ویژگی‌های ورودی مدل — از جمله تعداد شهرها ($N=15$) و واریانس فواصل ($18{,}375\ \text{km}^2$) — به تصویر کشیده می‌شوند. واریانس فواصل نشان‌دهنده‌ی میزان پراکندگی یا خوشه‌بندی شهرها روی نقشه است: واریانس بالا یعنی فواصل بین شهرها نوسان شدیدی دارد، که به مدل می‌فهماند برخی یال‌ها بسیار طولانی و برخی بسیار کوتاه‌اند؛ این توزیع هندسی مستقیماً روی رفتار تبخیر فرومون در ACO یا حفظ ساختار یال‌ها در عملگر ERX ژنتیک اثرگذار است.</li>
+      <li><b>پنجره تنظیمات پارامترها (Parameters):</b> به کاربر اجازه می‌دهد فرامشخصات الگوریتم‌های فراابتکاری (مانند تعداد تکرارها یا اندازه‌ی جمعیت) را پیش از اجرا به‌صورت پویا تنظیم کند تا رفتار همگرایی کالیبره شود.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="ui-live-solver" style="--card-accent:var(--c-ga)">
+    <h3>🔄 بخش سوم: پایش زنده و نمودار همگرایی فرآیند حل (Live Solver & Convergence)</h3>
+    <p class="lead">
+      این تب فرآیند حل مسئله را به‌صورت چندرشته‌ای (Multi-Threading) مدیریت می‌کند تا محاسبات سنگین در یک نخ
+      پس‌زمینه (<span class="mono">QThread</span>) بدون فریز کردن رابط کاربری گرافیکی اجرا شوند.
+    </p>
+
+    <div class="figure">
+      <img src="pic3.png" alt="Live Solver and Convergence" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="img-fallback"><span class="fb-icon">🖼️</span><b>تصویر ۳ در دسترس نیست</b>انیمیشن به‌روزرسانی یال‌ها و منحنی کاهش هزینه محاسباتی ژنتیک</div>
+      <div class="figure-caption">تصویر ۳: انیمیشن متحرک به‌روزرسانی یال‌ها و منحنی کاهش هزینه محاسباتی ژنتیک</div>
+    </div>
+
+    <h4>مفهوم و معنای پنجره همگرایی ژنتیک (Genetic Convergence):</h4>
+    <p>
+      نمودار سمت راست که با عنوان <b>Genetic Convergence</b> مشخص شده، نمودار تغییرات تابع برازش (Cost Function)
+      در طول تکرارها (Iterations) است. محور عمودی طول کل مسیر پیداشده به کیلومتر و محور افقی شماره‌ی نسل یا
+      تکرار الگوریتم را نشان می‌دهد.
+    </p>
+    <ul class="mech-list">
+      <li><b>رفتار پله‌ای منحنی:</b> این رفتار نزولی اثبات می‌کند که عملگر پیشرفته‌ی بازترکیب یال (ERX) با حفظ ویژگی‌های برتر والدین توانسته مسیرهای کوتاه‌تر و بهینه‌تری تولید کند و هزینه را از حدود ۱۶۹۰ کیلومتر به‌تدریج کاهش داده و روی عدد ۱۶۲۶.۶۴ کیلومتر قفل کند.</li>
+      <li><b>بصری‌سازی آنی:</b> سیستم به کمک ساختار <span class="mono">pyqtSignal</span> در هر چند نسل، بهترین کروموزوم را به لایه‌ی گرافیکی می‌فرستد و خطوط سبزرنگ روی نقشه‌ی سمت چپ را به‌صورت پویا به‌روزرسانی می‌کند تا فرآیند تکامل برای کاربر ملموس باشد.</li>
+    </ul>
+  </div>
+
+  <div class="card" id="ui-benchmark" style="--card-accent:var(--navy)">
+    <h3>📊 بخش چهارم: داشبورد بنچمارک و ارزیابی تطبیقی حلگرها (Benchmarking Analytics)</h3>
+    <p class="lead">
+      تب پایانی سیستم وظیفه‌ی اجرای هم‌زمان و ارزیابی عمیق هر سه رویکرد پروژه (مورچگان، ژنتیک و پرولوگ) را روی
+      نقشه‌ی بارگذاری‌شده بر عهده دارد تا داده‌های لازم برای تحلیل‌های آماری مهیا شوند.
+    </p>
+
+    <div class="figure">
+      <img src="pic4.png" alt="Benchmark and Final Comparison" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="img-fallback"><span class="fb-icon">🖼️</span><b>تصویر ۴ در دسترس نیست</b>نمودارهای مقایسه‌ای طول مسیر، زمان اجرا و جدول خلاصه آماری بنچمارک</div>
+      <div class="figure-caption">تصویر ۴: نمودارهای مقایسه‌ای طول مسیر، زمان اجرا و جدول خلاصه آماری بنچمارک</div>
+    </div>
+
+    <h4>تحلیل خروجی‌های نمودار و جدول جمع‌بندی:</h4>
+    <ul class="mech-list">
+      <li><b>نمودار هزینه مسیر (Route Cost - km):</b> این نمودار ستونی، طول پاسخ نهایی پیداشده توسط هر الگوریتم را مقایسه می‌کند. همان‌طور که دیده می‌شود، حلگر دقیق پرولوگ مسیر ۱۵۷۹ کیلومتر را به‌عنوان بهینه‌ی مطلق (Ground Truth) مشخص کرده است. الگوریتم ژنتیک (Genetic) توانسته دقیقاً به همین بهینه‌ی مطلق دست یابد، در حالی که کلونی مورچگان (ACO) با پاسخ ۱۶۵۴ کیلومتر در یک کمینه‌ی محلی (Local Minimum) متوقف شده است.</li>
+      <li><b>پنجره خلاصه نتایج (Results Summary):</b> این جدول آماری، فاکتورهای کلیدی عملکردی را در یک نگاه ماتریسی استخراج کرده است:
+        <br>• الگوریتم <b>ACO</b> فوق‌العاده سریع عمل کرده ($0.07$ ثانیه) اما دقت کمتری داشته است.
+        <br>• الگوریتم <b>Genetic</b> تعادل بهینه‌ای برقرار کرده و در زمان ناچیز $0.40$ ثانیه به جواب بهینه‌ی مطلق رسیده است.
+        <br>• حلگر دقیق <b>Prolog</b> با وجود تضمین پاسخ، زمان اجرای بسیار طولانی‌تر $2.95$ ثانیه را به ثبت رسانده است. این جدول به‌وضوح توازن میان زمان و دقت (Time-Accuracy Trade-off) را در مسائل NP-Hard اثبات می‌کند.
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+</main>
+
+<footer>
+  <div class="container">
+    <b>گزارش پروژه درس هوش مصنوعی</b> — حل مسئله فروشنده دوره‌گرد (TSP) با ترکیب رویکردهای منطق‌گرا، هوش جمعی و تکاملی<br>
+    معین حسن‌پور · شماره دانشجویی 40032313
+  </div>
+</footer>
+
+<a href="#" id="back-to-top" aria-label="بازگشت به بالا">↑</a>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "$", right: "$", display: false}
+        ],
+        throwOnError: false
+      });
+    }
+
+    // reading progress bar
+    var progressBar = document.getElementById("progress-bar");
+    function updateProgress() {
+      var scrollTop = window.scrollY || document.documentElement.scrollTop;
+      var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      if (progressBar) progressBar.style.width = pct + "%";
+    }
+    window.addEventListener("scroll", updateProgress);
+    updateProgress();
+
+    // back to top button
+    var backToTop = document.getElementById("back-to-top");
+    function toggleBackToTop() {
+      if (window.scrollY > 480) {
+        backToTop.classList.add("show");
+      } else {
+        backToTop.classList.remove("show");
+      }
+    }
+    window.addEventListener("scroll", toggleBackToTop);
+    toggleBackToTop();
+    backToTop.addEventListener("click", function(e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+</script>
+</body>
+</html>
